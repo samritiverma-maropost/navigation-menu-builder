@@ -486,7 +486,7 @@
     return `<span class="rp-chip ${inactive ? "muted" : ""}">${esc(name)}${count ? `<span class="rp-chip-badge" title="${count} nested items">${count}</span>` : ""}</span>`;
   }
 
-  function furnitureTree() {
+  function furnitureBranch() {
     const seats = item({ name: "Seats", resourceType: "Category", linkedLabel: "Seats", linkedIds: ["k-seats"], imageSource: "Collection" });
     const seater = item({ name: "3 Seater", resourceType: "Category", linkedLabel: "3 Seater", linkedIds: ["k-3s"], imageSource: "Collection" });
     const coffee = item({ name: "Coffee Table", resourceType: "Category", linkedLabel: "Coffee tables", linkedIds: ["k-coffee"], imageSource: "Collection" });
@@ -498,23 +498,89 @@
       name: "Tables", resourceType: "Category", linkedLabel: "Tables", linkedIds: ["k-tables"],
       imageSource: "Collection", includeChildren: false, childTotal: 4, children: [coffee],
     });
-    const furniture = item({
+    return item({
       name: "Furniture", resourceType: "Category", linkedLabel: "Furniture", linkedIds: ["k-furn"],
       imageSource: "None", includeChildren: true, childTotal: 18, children: [sofas, tables],
     });
-    return [contactItem(), furniture];
+  }
+
+  function outdoorBranch() {
+    const sofa = item({
+      name: "Outdoor Sofa", resourceType: "Category", linkedLabel: "Outdoor Sofa",
+      linkedIds: ["k-out-sofa"], imageSource: "Collection",
+    });
+    const table = item({
+      name: "Outdoor Table", resourceType: "Category", linkedLabel: "Outdoor Table",
+      linkedIds: ["k-out-table"], imageSource: "Collection",
+    });
+    return item({
+      name: "Outdoor", resourceType: "Category", linkedLabel: "Outdoor",
+      linkedIds: ["k-out"], imageSource: "Collection", includeChildren: true, children: [sofa, table],
+    });
+  }
+
+  function furnitureTree() {
+    return [contactItem(), furnitureBranch()];
+  }
+
+  function listingRecord(row) {
+    const items = row.items || l1Items(row.names || []);
+    const prev = chipPreview(items, row.chipCap);
+    return {
+      id: row.id,
+      name: row.name,
+      status: row.status,
+      chipCap: row.chipCap,
+      items,
+      chips: prev.chips,
+      more: prev.more,
+    };
   }
 
   const LISTING = [
-    { id: "m1", name: "Test", status: "Active", names: ["Home", "About Us"], chipCap: 5 },
-    { id: "m2", name: "Draft", status: "Active", names: ["Tools", "Automotive", "Trw Parts & Service", "Home", "Shop", "Sale", "Blog", "About"], chipCap: 3 },
-    { id: "m3", name: "Mega Menu", status: "Inactive", names: ["Shop", "Brands", "Stockists", "Blog", "Contact"], chipCap: 5 },
-    { id: "m4", name: "Test Menu", status: "Inactive", names: ["Shop", "Brands", "Stockists", "Blog", "FAQs", "About", "Help"], chipCap: 5 },
-  ].map((row) => {
-    const items = l1Items(row.names);
-    const prev = chipPreview(items, row.chipCap);
-    return { id: row.id, name: row.name, status: row.status, items, chips: prev.chips, more: prev.more };
-  });
+    listingRecord({
+      id: "m1",
+      name: "Main Menu",
+      status: "Active",
+      chipCap: 4,
+      items: [
+        item({ name: "Home", resourceType: "Custom URL", linkTo: "/" }),
+        item({ name: "FAQs", resourceType: "Custom URL", linkTo: "/faqs" }),
+        furnitureBranch(),
+        outdoorBranch(),
+        item({ name: "Sale", resourceType: "Custom URL", linkTo: "/sale" }),
+        item({ name: "About us", resourceType: "Custom URL", linkTo: "/about" }),
+      ],
+    }),
+    listingRecord({
+      id: "m2",
+      name: "Test",
+      status: "Active",
+      chipCap: 3,
+      names: ["Tools", "Automotive", "Trw Parts & Service", "Home", "Shop", "Sale", "Blog", "About"],
+    }),
+    listingRecord({
+      id: "m3",
+      name: "Footer Menu",
+      status: "Active",
+      chipCap: 5,
+      names: ["Service", "About Us", "Information"],
+    }),
+    listingRecord({
+      id: "m4",
+      name: "Mega Menu",
+      status: "Inactive",
+      chipCap: 5,
+      names: ["Shop", "Brands", "Stockists", "Blog", "Contact"],
+    }),
+    listingRecord({
+      id: "m5",
+      name: "Test Menu",
+      status: "Inactive",
+      chipCap: 5,
+      names: ["Shop", "Brands", "Stockists", "Blog", "FAQs", "About", "Help"],
+    }),
+  ];
 
   function emptyDraft() {
     nid = 1;
@@ -770,7 +836,7 @@
             <button type="button" class="rp-menu-name" data-act="open-menu" data-id="${m.id}">${esc(m.name)}</button>
           </td>
           <td>
-            <div style="display:flex;flex-wrap:wrap;align-items:center">
+            <div class="rp-chips">
               ${m.chips.map((t) => chipHtml(t, inactive)).join("")}
               ${m.more ? `<button type="button" class="rp-more" data-act="noop">+${m.more} more</button>` : ""}
             </div>
@@ -1676,11 +1742,14 @@
       render();
       return;
     }
-    const preview = chipPreview(state.draft.items);
+    const existing = state.editingId ? state.menus.find((m) => m.id === state.editingId) : null;
+    const cap = existing && existing.chipCap != null ? existing.chipCap : 4;
+    const preview = chipPreview(state.draft.items, cap);
     const rec = {
       id: state.editingId || uid(),
       name: state.draft.menuName,
       status: state.draft.active ? "Active" : "Inactive",
+      chipCap: cap,
       items: cloneItems(state.draft.items),
       chips: preview.chips,
       more: preview.more,
