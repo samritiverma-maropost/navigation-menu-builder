@@ -630,38 +630,9 @@
     state.screen = "Add new menu";
   }
 
-  function protoBar() {
-    const flows = [
-      ["a", "A · Add menu"],
-      ["b", "B · Image"],
-      ["c", "C · Category"],
-      ["d", "D · Pages"],
-      ["e", "E · Blogs"],
-    ];
-    const alts = [
-      ["bulk1", "Bulk 1"],
-      ["bulk2", "Bulk 2"],
-      ["alert1", "Alert 1"],
-      ["alert2", "Alert 2"],
-    ];
-    return `
-      <div class="dr-proto">
-        <strong>Design Ready</strong>
-        Clickable HTML · Liquid Sky
-        <a href="index.html">Hub</a>
-        <span class="sep"></span>
-        ${flows.map(([id, label]) => `<button type="button" class="${state.flow === id ? "on" : ""}" data-act="flow" data-id="${id}">${label}</button>`).join("")}
-        <span class="sep"></span>
-        ${alts.map(([id, label]) => `<button type="button" class="${state.flow === id ? "on" : ""}" data-act="flow" data-id="${id}">${label}</button>`).join("")}
-        <a href="https://www.figma.com/design/5Dd6KVq8SSMgZiwzPk4rsE/Navigation-menu-builder?node-id=11100-44617" target="_blank" rel="noopener">Figma</a>
-        <span class="dr-screen-tag">${esc(state.screen)}</span>
-      </div>`;
-  }
-
   function shell(inner, crumb) {
     const open = state.headerOpen;
     return `
-      ${protoBar()}
       <header class="rp-appbar">
         <div class="rp-brand"><img src="icons/logo.png" alt="MAROPOST" /></div>
         <div class="rp-search">
