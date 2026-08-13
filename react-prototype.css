@@ -213,11 +213,13 @@ body {
 .rp-more { color: #006baf; font-size: 14px; background: none; border: 0; cursor: pointer; padding: 0 4px; letter-spacing: 0.25px; }
 .rp-more:hover { text-decoration: underline; }
 .rp-status {
-  display: inline-flex; align-items: center; height: auto; padding: 3px 8px;
-  border-radius: 10px; font-size: 12px; letter-spacing: 0.04px; background: transparent; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  height: auto; padding: 3px 8px; border-radius: 10px;
+  font-size: 12px; font-weight: 400; letter-spacing: 0.04px; line-height: 1;
+  background: transparent; white-space: nowrap; box-sizing: border-box;
 }
-.rp-status.ok { border: 1px solid #41ce65; color: var(--ls-ok); background: #bcecc8; }
-.rp-status.err { border: 1px solid var(--ls-err); color: var(--ls-err); }
+.rp-status.ok { border: 1px solid #41ce65; color: #29993e; background: transparent; }
+.rp-status.err { border: 1px solid #b00020; color: #b00020; background: transparent; }
 .rp-table tbody tr.is-inactive { background: #fafafa; }
 .rp-table tbody tr.is-inactive:hover { background: #f0f0f0; }
 .rp-table tbody tr.is-selected, .rp-table tbody tr.is-hover { background: #f0f0f0; }
