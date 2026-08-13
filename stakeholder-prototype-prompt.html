@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Menu builder · stakeholder prototype prompt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #171717;
+      --ink2: #545c6c;
+      --line: #eceff3;
+      --line2: #cfd1dc;
+      --bg: #f7f8fa;
+      --white: #fff;
+      --btn: #1e3a5f;
+      --font: Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: #e8ecf1;
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .bar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 16px;
+      background: #0f172a;
+      color: #cbd5e1;
+      font-size: 12px;
+    }
+    .bar strong { color: #fff; }
+    .bar a {
+      color: #e2e8f0;
+      text-decoration: none;
+      border: 1px solid #475569;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+    .wrap { max-width: 820px; margin: 0 auto; padding: 24px 16px 80px; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    .sub { color: var(--ink2); margin: 0 0 16px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 0;
+      border-radius: 4px;
+      padding: 8px 14px;
+      background: var(--btn);
+      color: #fff;
+      font-weight: 500;
+    }
+    button.ghost {
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--line2);
+    }
+    pre {
+      margin: 0;
+      padding: 20px;
+      background: var(--white);
+      border: 1px solid var(--line2);
+      border-radius: 8px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #1e293b;
+    }
+    .ok { font-size: 12px; color: #047857; min-height: 18px; }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <strong>Prompt</strong>
+    Paste into Figma Make, Cursor, or v0
+    <a href="https://www.figma.com/design/5Dd6KVq8SSMgZiwzPk4rsE/Navigation-menu-builder?node-id=11100-44617" target="_blank" rel="noopener">Figma · Design Ready</a>
+    <a href="index.html">Menu builder hub</a>
+  </div>
+  <div class="wrap">
+    <h1>Stakeholder prototype prompt</h1>
+    <p class="sub">
+      Copy this into an AI builder with Figma MCP connected. Source file key
+      <code>5Dd6KVq8SSMgZiwzPk4rsE</code>, board node <code>11100:44617</code>.
+    </p>
+    <div class="actions">
+      <button type="button" id="copyBtn">Copy prompt</button>
+      <button type="button" class="ghost" id="selectBtn">Select all</button>
+    </div>
+    <p class="ok" id="status"></p>
+    <pre id="prompt">I'm building a clickable prototype of a navigation menu builder for stakeholder
+review — not production code. Use React + Tailwind, single project, client-side
+state only.
+
+Pull design references from the connected Figma file (key: 5Dd6KVq8SSMgZiwzPk4rsE,
+board node 11100:44617) via the Figma MCP connection. Match colors, spacing, and
+typography from these frames — don't restyle:
+
+- "Listing page" — navigation menus table with status pills and a "Create a menu" button.
+- "New Menu editor page" — empty state before any items are added, single "Add new" button.
+- "Add new menu" / "Add new menu 2" — the create flow: Menu Name field, Active
+  toggle, Preview/Cancel/Save.
+- "Select Resource type" — dropdown with these exact options: Custom URL,
+  Collection, Category, Home page, Pages, Blogs, Search, Products.
+- "Custome URL" — when Resource type = Custom URL, show an editable "Link to"
+  text field.
+- "Resource type: category" / "Select Nested Category" / "Open Nested Category" —
+  when Resource type = Category or Collection, instead of a text field, show a
+  read-only "Linked Resources" field plus a "Change Selection" button that opens
+  the nested collection picker (checkboxes, expand/collapse chevrons, color-coded
+  L1/L2/L3 level pills, sort dropdown, search, "Apply to menu" button).
+- "Resource type pages list" / "Resource type blogs list" — same nested-picker
+  pattern for Pages and Blogs.
+- "Image Source: Collection" / "Custom" / "None" — three-way toggle on the item
+  details panel with a contextual note box that changes per option.
+- "Hide Menu" / "Actions" — item details panel has "Hide on storefront" and
+  "Remove from menu" as two distinct actions.
+- "Bulk action idea 1" — when one or more tree rows are checked, a dark toolbar
+  appears above the list showing "N selected" with Hide / Remove / Clear buttons.
+  The header row gets an indeterminate checkbox when some but not all rows are
+  selected.
+- "Filter page" — sort/filter control on the menu structure list ("New → Old"
+  dropdown).
+
+Wire up real interaction, not just visuals:
+- Checking a checkbox in the tree checks its ancestors up to L1; unchecking a
+  parent unchecks everything nested under it.
+- The "Include children" toggle only appears on rows that have children.
+- Selecting rows in the main tree shows the bulk action toolbar; Hide/Remove/Clear
+  act on the checked set and then it disappears.
+- Clicking a row in the tree populates the Item Details panel on the right for
+  that item.
+
+Keep all state in React (useState/useReducer) — nothing needs to persist after
+a refresh, this is for click-through review only.</pre>
+  </div>
+  <script>
+    const promptEl = document.getElementById("prompt");
+    const status = document.getElementById("status");
+    const text = () => promptEl.textContent;
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(text());
+        status.textContent = "Copied.";
+      } catch {
+        status.textContent = "Copy failed — use Select all, then copy.";
+      }
+    });
+    document.getElementById("selectBtn").addEventListener("click", () => {
+      const range = document.createRange();
+      range.selectNodeContents(promptEl);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Navigation menu builder · Figma clickable prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="_nav.css" />
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<div class="proto-bar">
+  <strong>Prototype</strong>
+  Clickable · mapped from Figma
+  <a class="proto-pill active" href="index.html">Hub</a>
+  <a class="proto-pill" href="design-ready.html">Design Ready</a>
+  <a class="proto-pill" href="react-prototype.html">React prototype</a>
+  <a class="proto-pill" href="01-navigations.html">1 · List</a>
+  <a class="proto-pill" href="02-current-as-is.html">2 · Current</a>
+  <a class="proto-pill" href="03-menu-editor.html">3 · Phase 1 editor</a>
+  <a class="proto-pill" href="04-davinci-menu-builder.html">4 · Da Vinci</a>
+  <a class="proto-pill" href="05-menu-editor-v2.html">5 · v2 decisions</a>
+  <a class="proto-pill" href="06-menu-structure-table.html">6 · Table columns</a>
+  <a class="proto-pill" href="07-side-panel-picker.html">7 · Panel picker</a>
+  <a class="proto-pill" href="08-feedback-closeout.html">8 · Close-out</a>
+  <a class="proto-pill" href="09-include-children-alert.html">9 · Alert</a>
+  <a class="proto-pill" href="10-pages-posts-blog.html">10 · Pages/Posts/Blog</a>
+  <a class="proto-pill" href="11-multi-l1-info-bar.html">11 · Multi L1</a>
+  <a class="proto-pill" href="https://www.figma.com/design/5Dd6KVq8SSMgZiwzPk4rsE/Navigation-menu-builder?node-id=6321-1801" target="_blank" rel="noopener">Figma</a>
+</div>
+
+<div class="shell">
+  <header class="appbar">
+    <div class="brandcell">MAROPOST</div>
+    <div class="acct">Account 2000293 <span class="chev">&#9662;</span></div>
+    <div class="abar-search"><input placeholder="Search" readonly /></div>
+    <div class="abar-right"><a class="davinci" href="04-davinci-menu-builder.html?journey=d&open=1">Da Vinci</a></div>
+  </header>
+  <div class="body">
+    <aside class="sidebar">
+      <div class="gs"><b>Sandstone Home</b><span>Store · Sales channel</span></div>
+      <div class="nav-sec">
+        <div class="nav-label">Storefront</div>
+        <div class="nav-item">Overview</div>
+        <div class="nav-item">Themes</div>
+        <a class="nav-sub active" href="01-navigations.html">Navigations</a>
+        <div class="nav-item">Pages</div>
+      </div>
+      <div class="nav-sec">
+        <div class="nav-label">Prototype</div>
+        <a class="nav-sub" href="index.html">E2E hub</a>
+        <a class="nav-sub" href="03-menu-editor.html">Phase 1 editor</a>
+        <a class="nav-sub" href="04-davinci-menu-builder.html">Da Vinci</a>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="page">
+        <nav class="breadcrumb">
+          <span>Sales Channels</span><span class="sep">&#8250;</span>
+          <span>Sandstone Home</span><span class="sep">&#8250;</span>
+          <span class="cur">Figma clickable prototype</span>
+        </nav>
+        <div class="page-head">
+          <div>
+            <h1>Navigation menu builder</h1>
+            <p class="sub">
+              Clickable HTML prototype from
+              <a href="https://www.figma.com/design/5Dd6KVq8SSMgZiwzPk4rsE/Navigation-menu-builder?node-id=6321-1801" target="_blank" rel="noopener">Figma · ► Menu builder</a>
+              · CTAs wired end-to-end (Create → build → Save → list).
+            </p>
+          </div>
+          <a class="btn primary" id="ctaCreate" href="01-navigations.html">Create a menu</a>
+        </div>
+
+        <div class="flow-hero">
+          <h2>Primary CTA path (matches Figma)</h2>
+          <ol class="flow-steps">
+            <li><span class="n">1</span><span><b>Navigations</b> — Create a menu</span></li>
+            <li><span class="n">2</span><span><b>Editor</b> — Add collections (bulk drawer)</span></li>
+            <li><span class="n">3</span><span><b>Item details</b> — resource type · image source · nest</span></li>
+            <li><span class="n">4</span><span><b>Preview</b> — desktop / mobile</span></li>
+            <li><span class="n">5</span><span><b>Save</b> — returns to Navigations list · Cancel discards</span></li>
+          </ol>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <a class="btn primary" href="design-ready.html#a">Design Ready · A Add menu</a>
+            <a class="btn primary" id="startHappy" href="01-navigations.html">Start from list <span class="click-hint">Click</span></a>
+            <a class="btn" href="03-menu-editor.html?figma=add-new">Jump to empty editor + drawer</a>
+          </div>
+        </div>
+
+        <h2 style="font-size:16px;margin:0 0 12px">Figma sections → clickable screens</h2>
+        <div class="hub-grid">
+          <a class="hub-card" href="design-ready.html" style="border-color:var(--ls-btn-enabled);box-shadow:inset 0 0 0 1px var(--ls-btn-enabled)">
+            <h3>Design Ready · clickable HTML</h3>
+            <p>Pixel-matched from ► Design Ready. Journeys A–E plus Bulk 1/2 and Alert 1/2 as alternate starts — not chained.</p>
+            <div class="meta">Liquid Sky · Roboto · Figma 11100:44617</div>
+          </a>
+          <a class="hub-card" href="react-prototype.html">
+            <h3>React · Stakeholder prototype</h3>
+            <p>Click-through from ► Design Ready: listing, editor, resource types, nested picker, image source, bulk bar.</p>
+            <div class="meta">React + Tailwind · client state only</div>
+          </a>
+          <a class="hub-card" href="11-multi-l1-info-bar.html" style="border-color:#ffb74d;box-shadow:inset 0 0 0 1px #ffd8a8">
+            <h3>11 · Multi-L1 info bar</h3>
+            <p>One bar when several L1 parents with different depths are selected — total + short breakdown, then Apply.</p>
+            <div class="meta">Answers mixed-hierarchy selection</div>
+          </a>
+          <a class="hub-card" href="10-pages-posts-blog.html" style="border-color:var(--ls-btn-enabled);box-shadow:inset 0 0 0 1px var(--ls-btn-enabled)">
+            <h3>10 · Pages / Posts / Blog</h3>
+            <p>Same side-panel picker as Category — switch resource type to browse pages, posts, or blog sections.</p>
+            <div class="meta">Matches Figma · Resource type section</div>
+          </a>
+          <a class="hub-card" href="09-include-children-alert.html" style="border-color:#ffb74d;box-shadow:inset 0 0 0 1px #ffb74d">
+            <h3>9 · Include children alert</h3>
+            <p>Simple 3-step: Before → Stopped (100 &gt; 50) → After. Ask how many to add.</p>
+            <div class="meta">Less text · clearer problem</div>
+          </a>
+          <a class="hub-card" href="08-feedback-closeout.html" style="border-color:var(--ls-btn-enabled);box-shadow:inset 0 0 0 1px var(--ls-btn-enabled)">
+            <h3>8 · Feedback close-out (share)</h3>
+            <p>All review gaps in one board: full resource type list (no Container), bulk · 3 selected, include-children over-cap alert.</p>
+            <div class="meta">Share with stakeholders · Roboto</div>
+          </a>
+          <a class="hub-card" href="07-side-panel-picker.html" style="border-color:var(--ls-btn-enabled);box-shadow:inset 0 0 0 1px var(--ls-btn-enabled)">
+            <h3>7 · Panel picker · E2E</h3>
+            <p>Functional E2E: Add → Resource type in Item details → pick nested list in panel → Apply. Parent + child nest in the tree.</p>
+            <div class="meta">Live tree · nesting · Preview · Save</div>
+          </a>
+          <a class="hub-card" href="06-menu-structure-table.html">
+            <h3>6 · Table columns (design)</h3>
+            <p>Menu structure table mirrors picker columns: Item · Type · Children · Include · Level. Separates “1” from L1.</p>
+            <div class="meta">Separate file · v2 unchanged</div>
+          </a>
+          <a class="hub-card" href="05-menu-editor-v2.html">
+            <h3>5 · Editor v2 (post-call)</h3>
+            <p>One Add · drill-down multi-select · global sort · depth colors · bulk hide/remove. Combines Commerce Storefront patterns.</p>
+            <div class="meta">Separate file · Phase 1 unchanged</div>
+          </a>
+          <a class="hub-card" href="01-navigations.html">
+            <h3>Navigations list</h3>
+            <p>Single Page Form — Create a menu, Edit, Delete.</p>
+            <div class="meta">Figma · Single Page Form</div>
+          </a>
+          <a class="hub-card" href="03-menu-editor.html?figma=add-new">
+            <h3>ADD NEW MENU</h3>
+            <p>Empty editor + Add collections drawer opens automatically.</p>
+            <div class="meta">CTA · Add collections · Add to menu</div>
+          </a>
+          <a class="hub-card" href="03-menu-editor.html?figma=image-source">
+            <h3>Image source</h3>
+            <p>Inspector seeded on Collection / Custom / None + preview card.</p>
+            <div class="meta">CTA · segment switch · Remove from menu</div>
+          </a>
+          <a class="hub-card" href="03-menu-editor.html?figma=resource-collection">
+            <h3>Resource type · Collection</h3>
+            <p>Outdoor + nested children · collection image mode.</p>
+            <div class="meta">CTA · resource select · Add child collections</div>
+          </a>
+          <a class="hub-card" href="03-menu-editor.html?figma=resource-category">
+            <h3>Resource type · Category</h3>
+            <p>Living category tree with nesting.</p>
+            <div class="meta">CTA · switch resource type</div>
+          </a>
+          <a class="hub-card" href="03-menu-editor.html?figma=resource-pages">
+            <h3>Resource type · Pages</h3>
+            <p>About / Contact / Shipping as page resources.</p>
+            <div class="meta">CTA · page link lock</div>
+          </a>
+          <a class="hub-card" href="03-menu-editor.html?figma=complex">
+            <h3>Complex menu</h3>
+            <p>Stress-case Main menu with depth + validation pills.</p>
+            <div class="meta">CTA · Preview · Save</div>
+          </a>
+          <a class="hub-card" href="03-menu-editor.html?figma=bulk-drawer">
+            <h3>Bulk selection drawer</h3>
+            <p>Orders-style select all / Add to menu / Clear.</p>
+            <div class="meta">CTA · drawer bulk bar</div>
+          </a>
+          <a class="hub-card" href="04-davinci-menu-builder.html?journey=d&open=1">
+            <h3>04a · Da Vinci empty</h3>
+            <p>Generate with Da Vinci → preferences sheet.</p>
+            <div class="meta">CTA · Generate</div>
+          </a>
+          <a class="hub-card" href="04-davinci-menu-builder.html?journey=d">
+            <h3>04b–c · Draft + Refine</h3>
+            <p>Generate draft, refine chips, Save to Navigations.</p>
+            <div class="meta">CTA · Save (never auto-publish)</div>
+          </a>
+          <a class="hub-card" href="02-current-as-is.html">
+            <h3>Current as-is (contrast)</h3>
+            <p>Today’s one-by-one form — not the proposed flow.</p>
+            <div class="meta">Pain baseline</div>
+          </a>
+        </div>
+
+        <div class="flow-hero" style="margin-top:28px">
+          <h2>Journey scripts</h2>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+            <a class="btn primary" href="design-ready.html#a">Design Ready · A</a>
+            <a class="btn" href="design-ready.html#b">B · Image</a>
+            <a class="btn" href="design-ready.html#c">C · Category</a>
+            <a class="btn" href="design-ready.html#d">D · Pages</a>
+            <a class="btn" href="design-ready.html#e">E · Blogs</a>
+            <a class="btn primary" id="startA" href="01-navigations.html?journey=a">Journey A · Bulk setup</a>
+            <a class="btn" id="startB" href="03-menu-editor.html?seed=outdoor&journey=b">Journey B · Add children</a>
+            <a class="btn" id="startC" href="03-menu-editor.html?figma=complex">Journey C · Complex</a>
+            <a class="btn davinci-cta" id="startD" href="04-davinci-menu-builder.html?journey=d&open=1">Journey D · Da Vinci</a>
+          </div>
+        </div>
+
+        <p style="margin-top:28px;font-size:12px;color:var(--ink-3)">
+          Source:
+          <a href="https://www.figma.com/design/5Dd6KVq8SSMgZiwzPk4rsE/Navigation-menu-builder?node-id=6321-1801" target="_blank" rel="noopener">Navigation-menu-builder</a>
+          ·
+          <a href="https://www.figma.com/design/MCqS7kCTVwB8a1zpJk0fmL/Liquid-Sky---Web-Kit-1.0?node-id=35-51" target="_blank" rel="noopener">Liquid Sky Web Kit 1.0</a>
+        </p>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="_nav.js"></script>
+<script>
+  document.getElementById("ctaCreate").addEventListener("click", function (e) {
+    e.preventDefault();
+    NavProto.createNewMenu({ menuName: "Untitled menu", journey: "figma" });
+    location.href = "03-menu-editor.html?figma=add-new";
+  });
+  document.getElementById("startHappy").addEventListener("click", function (e) {
+    e.preventDefault();
+    location.href = "01-navigations.html";
+  });
+  document.getElementById("startA").addEventListener("click", function (e) {
+    e.preventDefault();
+    location.href = "01-navigations.html";
+  });
+  document.getElementById("startB").addEventListener("click", function (e) {
+    e.preventDefault();
+    var draft = NavProto.createNewMenu({ menuName: "Outdoor starter", journey: "b" });
+    draft.items = NavProto.buildFromSelection(["outdoor"], false);
+    draft.selectedId = draft.items[0] ? draft.items[0].id : null;
+    draft.dirty = true;
+    NavProto.saveDraft(draft);
+    location.href = "03-menu-editor.html?journey=b";
+  });
+  document.getElementById("startC").addEventListener("click", function (e) {
+    e.preventDefault();
+    NavProto.seedFigmaScenario("complex");
+    location.href = "03-menu-editor.html?figma=complex";
+  });
+</script>
+</body>
+</html>

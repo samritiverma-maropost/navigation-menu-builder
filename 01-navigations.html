@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Navigations · list</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="_nav.css" />
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<div class="proto-bar">
+  <strong>Step 1</strong> Navigations list · nesting summary
+  <a class="proto-pill" href="index.html">Hub</a>
+  <a class="proto-pill active" href="01-navigations.html">1 · List</a>
+  <a class="proto-pill" href="02-current-as-is.html">2 · Current</a>
+  <a class="proto-pill" href="03-menu-editor.html">3 · Proposed</a>
+  <button type="button" class="proto-pill" id="resetLib">Reset library</button>
+</div>
+
+<div class="shell">
+  <header class="appbar">
+    <div class="brandcell">MAROPOST</div>
+    <div class="acct">Account 2000293 <span class="chev">&#9662;</span></div>
+    <div class="abar-search"><input placeholder="Search" readonly /></div>
+    <div class="abar-right"><a class="davinci" href="04-davinci-menu-builder.html?journey=d&open=1">Da Vinci</a></div>
+  </header>
+  <div class="body">
+    <aside class="sidebar">
+      <div class="gs"><b>Sandstone Home</b><span>Store · Sales channel</span></div>
+      <div class="nav-sec">
+        <div class="nav-label">Storefront</div>
+        <div class="nav-item">Overview</div>
+        <div class="nav-item">Themes</div>
+        <a class="nav-sub active" href="01-navigations.html">Navigations</a>
+        <div class="nav-item">Pages</div>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="page">
+        <nav class="breadcrumb">
+          <a href="index.html">Sales Channels</a><span class="sep">&#8250;</span>
+          <span>Sandstone Home</span><span class="sep">&#8250;</span>
+          <span class="cur">Navigations</span>
+        </nav>
+        <div class="page-head">
+          <div>
+            <h1>Navigations</h1>
+            <p class="sub">
+              Menus saved from the editor appear here. Click <b>Save</b> in the editor to add or update a row.
+            </p>
+          </div>
+          <button type="button" class="btn primary" id="btnCreateMenu">Create a menu <span class="click-hint">Click</span></button>
+        </div>
+
+        <div class="list-legend">
+          <span><b>How nesting appears here</b></span>
+          <span><code>Outdoor 3</code> = top-level item with 3 nested children under it</span>
+          <span><code>Depth L3</code> = deepest level used in this menu</span>
+          <span>Open Edit for the full indented tree</span>
+        </div>
+
+        <div class="card">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Menu name</th>
+                <th>Structure</th>
+                <th>Depth</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="menusTable"></tbody>
+          </table>
+        </div>
+
+        <div class="flow-hero" style="margin-top:24px">
+          <h2>Product flow</h2>
+          <ol class="flow-steps">
+            <li><span class="n">1</span><span><b>Create a menu</b> — opens empty editor + bulk drawer</span></li>
+            <li><span class="n">2</span><span><b>Build</b> — add items, nest, set images (draft only)</span></li>
+            <li><span class="n">3</span><span><b>Save</b> — commits to this list · Cancel discards</span></li>
+            <li><span class="n">4</span><span><b>Edit</b> — reopen any saved menu</span></li>
+          </ol>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="_nav.js"></script>
+<script>
+(function () {
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function renderStructure(stats) {
+    if (!stats.total) {
+      return '<span class="nest-more">Empty — add collections to build hierarchy</span>';
+    }
+    var chips = stats.roots
+      .slice(0, 6)
+      .map(function (r) {
+        if (r.nestCount > 0) {
+          return (
+            '<span class="nest-chip">' +
+            escapeHtml(r.label) +
+            ' <span class="nest-count" title="' +
+            r.nestCount +
+            ' nested items">' +
+            r.nestCount +
+            "</span></span>"
+          );
+        }
+        return '<span class="nest-chip flat">' + escapeHtml(r.label) + "</span>";
+      })
+      .join("");
+    if (stats.roots.length > 6) {
+      chips += '<span class="nest-more">+' + (stats.roots.length - 6) + " more</span>";
+    }
+    return '<div class="nest-preview">' + chips + "</div>";
+  }
+
+  function renderTable() {
+    var menus = NavProto.listMenus();
+    var tbody = document.getElementById("menusTable");
+    if (!menus.length) {
+      tbody.innerHTML =
+        '<tr><td colspan="5" style="padding:28px;text-align:center;color:var(--ls-on-medium)">' +
+        "No menus yet. <button type=\"button\" class=\"btn ghost\" id=\"emptyCreate\">Create a menu</button>" +
+        "</td></tr>";
+      var emptyBtn = document.getElementById("emptyCreate");
+      if (emptyBtn) {
+        emptyBtn.addEventListener("click", function () {
+          NavProto.createNewMenu({ menuName: "Untitled menu", journey: "figma" });
+          location.href = "03-menu-editor.html?figma=add-new";
+        });
+      }
+      return;
+    }
+
+    var params = new URLSearchParams(location.search);
+    var savedId = params.get("saved");
+
+    tbody.innerHTML = menus
+      .map(function (menu) {
+        var stats = NavProto.menuStats(menu);
+        var meta = stats.total
+          ? stats.topLevel + " top-level · " + stats.total + " items total"
+          : "No items yet";
+        var depth =
+          stats.maxDepth > 0
+            ? '<span class="depth-pill" title="Deepest nesting">Depth L' + stats.maxDepth + "</span>"
+            : '<span class="pill neutral">—</span>';
+        var status = menu.active
+          ? '<span class="pill ok">Active</span>'
+          : '<span class="pill neutral">Inactive</span>';
+        var highlight = savedId === menu.id ? ' class="row-just-saved"' : "";
+        return (
+          "<tr" +
+          highlight +
+          ' data-id="' +
+          escapeHtml(menu.id) +
+          '" data-edit="' +
+          encodeURIComponent(menu.id) +
+          '" style="cursor:pointer">' +
+          "<td><div class=\"menu-cell-name\"><strong>" +
+          escapeHtml(menu.name) +
+          '</strong><span class="menu-depth-meta">' +
+          escapeHtml(meta) +
+          "</span></div></td>" +
+          "<td>" +
+          renderStructure(stats) +
+          "</td>" +
+          "<td>" +
+          depth +
+          "</td>" +
+          "<td>" +
+          status +
+          "</td>" +
+          '<td class="table-actions">' +
+          '<a class="btn ghost" href="03-menu-editor.html?id=' +
+          encodeURIComponent(menu.id) +
+          '">Edit</a>' +
+          '<button type="button" class="btn ghost danger-text" data-del="' +
+          escapeHtml(menu.id) +
+          '">Delete</button>' +
+          "</td></tr>"
+        );
+      })
+      .join("");
+
+    tbody.querySelectorAll("tr[data-edit]").forEach(function (row) {
+      row.addEventListener("click", function (e) {
+        if (e.target.closest("a, button, .table-actions")) return;
+        location.href = "03-menu-editor.html?id=" + row.getAttribute("data-edit");
+      });
+    });
+
+    tbody.querySelectorAll("[data-del]").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var id = btn.getAttribute("data-del");
+        var menu = NavProto.getMenu(id);
+        if (!menu) return;
+        if (!confirm('Delete "' + menu.name + '"? This cannot be undone.')) return;
+        NavProto.deleteMenu(id);
+        NavProto.toast("<strong>Deleted</strong>" + escapeHtml(menu.name));
+        if (savedId === id) history.replaceState({}, "", "01-navigations.html");
+        renderTable();
+      });
+    });
+  }
+
+  document.getElementById("btnCreateMenu").addEventListener("click", function () {
+    NavProto.createNewMenu({ menuName: "Untitled menu", journey: "figma" });
+    location.href = "03-menu-editor.html?figma=add-new";
+  });
+
+  document.getElementById("resetLib").addEventListener("click", function () {
+    if (!confirm("Reset Navigations list to demo menus (Main menu + Footer)?")) return;
+    NavProto.resetLibrary();
+    history.replaceState({}, "", "01-navigations.html");
+    renderTable();
+    NavProto.toast("<strong>Library reset</strong>Demo menus restored");
+  });
+
+  renderTable();
+
+  var params = new URLSearchParams(location.search);
+  if (params.get("saved")) {
+    var m = NavProto.getMenu(params.get("saved"));
+    if (m) {
+      NavProto.toast("<strong>Saved to list</strong>" + escapeHtml(m.name));
+    }
+  }
+})();
+</script>
+</body>
+</html>

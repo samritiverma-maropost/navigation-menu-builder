@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pages · Posts · Blog pickers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="_nav.css" />
+  <link rel="stylesheet" href="_nav-v2.css" />
+  <link rel="stylesheet" href="_nav-v7.css" />
+  <style>
+    .v10-tabs { display:flex; gap:8px; padding:12px 20px; background:#fff; border-bottom:1px solid #e8ebef; }
+    .v10-tabs button {
+      border:1px solid #d0d5db; background:#fff; border-radius:20px;
+      padding:8px 14px; font:500 13px Roboto,sans-serif; cursor:pointer; color:rgba(0,0,0,.54);
+    }
+    .v10-tabs button.on { background:#1e2533; border-color:#1e2533; color:#fff; }
+    .v10-note { margin:0; padding:10px 20px; font-size:13px; color:rgba(0,0,0,.55); background:#fafbfc; border-bottom:1px solid #eef0f2; }
+  </style>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<div class="proto-bar">
+  <strong>10 · Pages / Posts / Blog</strong> Same picker pattern as Category
+  <a class="proto-pill" href="index.html">Hub</a>
+  <a class="proto-pill" href="07-side-panel-picker.html">7 · Panel</a>
+  <a class="proto-pill active" href="10-pages-posts-blog.html">10 · Content types</a>
+  <a class="proto-pill" href="https://www.figma.com/design/5Dd6KVq8SSMgZiwzPk4rsE/Navigation-menu-builder?node-id=11215-5136" target="_blank" rel="noopener">Figma</a>
+</div>
+
+<p class="v10-note">Same side-panel picker as Category — switch type below to see Pages, Posts, or Blog lists.</p>
+<div class="v10-tabs" id="tabs">
+  <button type="button" class="on" data-type="page">Pages</button>
+  <button type="button" data-type="post">Posts</button>
+  <button type="button" data-type="blog">Blog</button>
+</div>
+
+<div class="shell" style="min-height:calc(100vh - 100px)">
+  <header class="appbar">
+    <div class="brandcell">MAROPOST</div>
+    <div class="acct">Account 2000293 <span class="chev">&#9662;</span></div>
+    <div class="abar-search"><input placeholder="Search" readonly /></div>
+  </header>
+  <div class="body">
+    <aside class="sidebar">
+      <div class="gs"><b>Sandstone Home</b><span>Store · Sales channel</span></div>
+      <div class="nav-sec">
+        <div class="nav-label">Storefront</div>
+        <a class="nav-sub" href="01-navigations.html">Navigations</a>
+        <a class="nav-sub active" href="10-pages-posts-blog.html">Pages · Posts · Blog</a>
+      </div>
+    </aside>
+    <main class="main editor-page v2-page v7-page">
+      <div class="editor-top">
+        <a class="back" href="01-navigations.html">&#8592; Navigations</a>
+        <input class="title-field" value="Main menu" readonly />
+        <span class="dirty-pill">Unsaved changes</span>
+        <button type="button" class="btn">Cancel</button>
+        <button type="button" class="btn">Preview</button>
+        <button type="button" class="btn primary">Save</button>
+      </div>
+      <div class="v2-toolbar">
+        <span class="v2-stat" id="statLabel">Resource type · Pages</span>
+        <div class="spacer"></div>
+        <button type="button" class="btn primary" id="btnAdd">Add</button>
+      </div>
+      <div class="editor-body">
+        <section class="tree-pane">
+          <div class="v7-tree-toolbar">
+            <h2>Menu structure</h2>
+            <div class="depth-legend">
+              <span class="dl l1"><i></i> L1</span>
+              <span class="dl l2"><i></i> L2</span>
+              <span class="dl l3"><i></i> L3</span>
+            </div>
+          </div>
+          <div class="v7-cols-head">
+            <span class="c-item">Item</span>
+            <span class="c-kids">Children</span>
+            <span class="c-level">Level</span>
+          </div>
+          <div class="v7-live-tree" id="tree"></div>
+        </section>
+        <aside class="inspector v7-panel">
+          <div class="v7-panel-scroll" id="insp"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+  var catalogs = {
+    page: {
+      label: "Pages",
+      choose: "Choose pages",
+      items: [
+        { id: "about", name: "About us", kids: 0, depth: 1 },
+        { id: "contact", name: "Contact", kids: 0, depth: 1 },
+        { id: "shipping", name: "Shipping & delivery", kids: 0, depth: 1 },
+        { id: "faqs", name: "FAQs", kids: 0, depth: 1 },
+        { id: "locations", name: "Store locations", kids: 0, depth: 1 },
+        { id: "careers", name: "Careers", kids: 0, depth: 1 }
+      ],
+      tree: [{ name: "About us", meta: "Pages · About us", lvl: 1, kids: 0 }]
+    },
+    post: {
+      label: "Posts",
+      choose: "Choose posts",
+      items: [
+        { id: "p1", name: "Summer outdoor guide", kids: 0, depth: 1 },
+        { id: "p2", name: "How to choose a sofa", kids: 0, depth: 1 },
+        { id: "p3", name: "Care tips for teak", kids: 0, depth: 1 },
+        { id: "p4", name: "Dining set trends 2026", kids: 0, depth: 1 },
+        { id: "p5", name: "Patio lighting ideas", kids: 0, depth: 1 },
+        { id: "p6", name: "Small-space living", kids: 0, depth: 1 }
+      ],
+      tree: [{ name: "Summer outdoor guide", meta: "Posts · Summer outdoor guide", lvl: 1, kids: 0 }]
+    },
+    blog: {
+      label: "Blog",
+      choose: "Choose blog",
+      items: [
+        { id: "blog-home", name: "Blog home", kids: 2, depth: 1 },
+        { id: "guides", name: "Buying guides", kids: 0, depth: 2, nest: true },
+        { id: "style", name: "Style tips", kids: 0, depth: 2, nest: true },
+        { id: "news", name: "Product news", kids: 1, depth: 1 },
+        { id: "behind", name: "Behind the brand", kids: 0, depth: 2, nest: true }
+      ],
+      tree: [
+        { name: "Blog home", meta: "Blog · Blog home", lvl: 1, kids: 1 },
+        { name: "Buying guides", meta: "Blog · Blog home → Buying guides", lvl: 2, kids: 0 }
+      ]
+    }
+  };
+
+  var type = "page";
+  var selected = {};
+
+  function render() {
+    var cat = catalogs[type];
+    document.getElementById("statLabel").textContent = "Resource type · " + cat.label;
+    document.querySelectorAll("#tabs button").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-type") === type);
+    });
+
+    document.getElementById("tree").innerHTML = cat.tree
+      .map(function (r) {
+        return (
+          '<div class="v7-live-row on" style="--nest:' +
+          (r.lvl - 1) +
+          '"><div class="v7-live-item"><div class="nm">' +
+          r.name +
+          '</div><div class="mt">' +
+          r.meta +
+          '</div></div><div class="v7-live-kids">' +
+          (r.kids ? '<span class="v3-kids-count">' + r.kids + "</span>" : '<span class="v3-na">—</span>') +
+          '</div><div class="v7-live-lvl"><span class="depth-chip l' +
+          r.lvl +
+          '">L' +
+          r.lvl +
+          "</span></div></div>"
+        );
+      })
+      .join("");
+
+    var list = cat.items
+      .map(function (it) {
+        var on = !!selected[it.id];
+        return (
+          '<div class="v7-pick-row' +
+          (on ? " is-on" : "") +
+          '" style="--nest:' +
+          (it.nest ? 1 : 0) +
+          '"><div class="left">' +
+          (it.kids
+            ? '<button type="button" class="tog open"><i class="mdi mdi-chevron-right"></i></button>'
+            : '<span class="spacer"></span>') +
+          '<input type="checkbox" data-id="' +
+          it.id +
+          '"' +
+          (on ? " checked" : "") +
+          " /><span class=\"label\">" +
+          it.name +
+          '</span></div><div class="kids"><span>' +
+          (it.kids || "—") +
+          '</span></div><div class="lvl-wrap"><span class="lvl l' +
+          it.lvl +
+          '">L' +
+          it.lvl +
+          "</span></div></div>"
+        );
+      })
+      .join("");
+
+    document.getElementById("insp").innerHTML =
+      "<h3>Item details</h3>" +
+      '<p class="sub">Same pattern as Category</p>' +
+      '<div class="v7-field"><label>Menu page name</label><input value="' +
+      cat.tree[0].name +
+      '" readonly /></div>' +
+      '<div class="v7-field"><label>Resource type</label>' +
+      '<select class="v7-select" id="typeSelect">' +
+      '<option value="page"' +
+      (type === "page" ? " selected" : "") +
+      ">Pages</option>" +
+      '<option value="post"' +
+      (type === "post" ? " selected" : "") +
+      ">Posts</option>" +
+      '<option value="blog"' +
+      (type === "blog" ? " selected" : "") +
+      ">Blog</option>" +
+      "</select></div>" +
+      '<div class="v7-inline-pick">' +
+      '<div class="v7-inline-head"><strong>' +
+      cat.choose +
+      '</strong><span class="v7-inline-badge">' +
+      cat.label +
+      "</span></div>" +
+      '<div class="v7-pick-box"><div class="v7-pick-tools">' +
+      '<input type="search" placeholder="Search…" />' +
+      '<button type="button" class="ghost">Expand all</button></div>' +
+      '<div class="v7-pick-cols"><span>Item</span><span>Children</span><span>Level</span></div>' +
+      '<div class="v7-pick-list">' +
+      list +
+      "</div></div>" +
+      '<button type="button" class="btn primary" style="width:100%;margin-top:8px">Apply to menu</button></div>';
+
+    document.getElementById("typeSelect").addEventListener("change", function () {
+      type = this.value;
+      selected = {};
+      render();
+    });
+    document.querySelectorAll("[data-id]").forEach(function (cb) {
+      cb.addEventListener("change", function () {
+        if (cb.checked) selected[cb.getAttribute("data-id")] = true;
+        else delete selected[cb.getAttribute("data-id")];
+        render();
+      });
+    });
+  }
+
+  document.querySelectorAll("#tabs button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      type = b.getAttribute("data-type");
+      selected = {};
+      render();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Menu structure table · picker columns design</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="_nav.css" />
+  <link rel="stylesheet" href="_nav-v2.css" />
+  <link rel="stylesheet" href="_nav-v3.css" />
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<div class="proto-bar">
+  <strong>v3 · design</strong> Table columns = picker parity
+  <a class="proto-pill" href="index.html">Hub</a>
+  <a class="proto-pill" href="05-menu-editor-v2.html">5 · v2</a>
+  <a class="proto-pill" href="06-menu-structure-table.html">6 · Table columns</a>
+  <a class="proto-pill" href="07-side-panel-picker.html">7 · Panel picker</a>
+</div>
+
+<div class="shell" style="min-height:calc(100vh - 37px)">
+  <header class="appbar">
+    <div class="brandcell">MAROPOST</div>
+    <div class="acct">Account 2000293 <span class="chev">&#9662;</span></div>
+    <div class="abar-search"><input placeholder="Search" readonly /></div>
+    <div class="abar-right"><span class="davinci">Da Vinci</span></div>
+  </header>
+  <div class="body">
+    <aside class="sidebar">
+      <div class="gs"><b>Sandstone Home</b><span>Store · Sales channel</span></div>
+      <div class="nav-sec">
+        <div class="nav-label">Storefront</div>
+        <a class="nav-sub" href="01-navigations.html">Navigations</a>
+        <a class="nav-sub" href="05-menu-editor-v2.html">Main menu · v2</a>
+        <a class="nav-sub active" href="06-menu-structure-table.html">Table columns · v3</a>
+      </div>
+    </aside>
+    <main class="main editor-page v2-page v3-page">
+      <div class="editor-top">
+        <a class="back" href="05-menu-editor-v2.html">&#8592; v2 editor</a>
+        <input class="title-field" value="Main menu · table columns" readonly aria-label="Menu name" />
+        <span class="dirty-pill">Design exploration</span>
+      </div>
+
+      <div class="v2-banner">
+        <i class="mdi mdi-table" aria-hidden="true"></i>
+        <div>
+          <b>Design ask:</b> show the same clarity from the resource picker
+          (<b>Item · Children · Level</b>) on the menu structure table — plus separate
+          <b>Type</b> and <b>Include</b> so “1” next to the toggle isn’t confused with <b>L1</b>.
+          Separate file; v2 left unchanged.
+        </div>
+      </div>
+
+      <div class="v3-compare">
+        <!-- Current problem -->
+        <section class="v3-card v3-old">
+          <div class="v3-card-head">
+            <h2>Current (v2)</h2>
+            <span class="tag">Problem</span>
+          </div>
+          <p class="v3-note">Toggle count and level sit close together — “1” and “L1” read as the same idea.</p>
+          <div class="v3-callout">
+            <strong>Hard to scan:</strong> Include children shows <b>1</b>, Level shows <b>L1</b> / <b>1/1</b> — no shared language with the picker columns.
+          </div>
+          <div class="v3-row-old">
+            <input type="checkbox" disabled />
+            <span class="handle"><i class="mdi mdi-drag"></i></span>
+            <div class="grow">
+              <div class="name">Living</div>
+              <div class="meta">Category · Living</div>
+            </div>
+            <div class="right confuse">
+              <span class="v3-switch on" aria-hidden="true"></span>
+              <span class="v3-kids-count">1</span>
+              <span class="limit-pill">1/1</span>
+              <span class="v3-level-chip l1">L1</span>
+            </div>
+            <button type="button" class="v3-menu" tabindex="-1"><i class="mdi mdi-dots-vertical"></i></button>
+          </div>
+          <div class="v3-row-old">
+            <input type="checkbox" disabled />
+            <span class="handle"><i class="mdi mdi-drag"></i></span>
+            <div class="grow" style="padding-left:20px">
+              <div class="name">Sofas &amp; lounges</div>
+              <div class="meta">Category · Living → Sofas &amp; lounges</div>
+            </div>
+            <div class="right">
+              <span class="v3-switch" aria-hidden="true"></span>
+              <span class="v3-kids-count">1</span>
+              <span class="v3-level-chip l2">L2</span>
+            </div>
+            <button type="button" class="v3-menu" tabindex="-1"><i class="mdi mdi-dots-vertical"></i></button>
+          </div>
+          <div class="v3-row-old">
+            <input type="checkbox" disabled />
+            <span class="handle"><i class="mdi mdi-drag"></i></span>
+            <div class="grow" style="padding-left:40px">
+              <div class="name">Sectionals</div>
+              <div class="meta">Category · Living → Sofas &amp; lounges → Sectionals</div>
+            </div>
+            <div class="right">
+              <span class="v3-na">—</span>
+              <span class="v3-level-chip l3">L3</span>
+            </div>
+            <button type="button" class="v3-menu" tabindex="-1"><i class="mdi mdi-dots-vertical"></i></button>
+          </div>
+        </section>
+
+        <!-- Proposed -->
+        <section class="v3-card">
+          <div class="v3-card-head">
+            <h2>Proposed table</h2>
+            <span class="tag proposed">Picker parity</span>
+          </div>
+          <p class="v3-note">Same columns as the Choose resource popup — plus Type and Include split apart.</p>
+          <div class="v3-legend">
+            <span class="l1"><i></i>L1</span>
+            <span class="l2"><i></i>L2</span>
+            <span class="l3"><i></i>L3</span>
+            <span style="margin-left:auto;font-weight:400">Max L3</span>
+          </div>
+          <div class="v3-table-wrap">
+            <div class="v3-cols-head">
+              <span></span>
+              <span>Item</span>
+              <span class="c-type">Type</span>
+              <span class="c-kids">Children</span>
+              <span class="c-include">Include</span>
+              <span class="c-level">Level</span>
+              <span></span>
+            </div>
+            <div id="v3Table"></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="v3-footer">
+        <p>
+          <b>Mapping:</b> Picker <i>Item / Children / Level</i> → table columns.
+          Toggle moves to <b>Include</b> only. Child count stays under <b>Children</b>.
+          Resource kind is a <b>Type</b> chip (Collection, Category, Pages…).
+        </p>
+        <a class="btn" href="05-menu-editor-v2.html">Open v2 editor</a>
+        <button type="button" class="btn primary" id="btnUseProposed">Use proposed layout in demo</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="_nav-v2.js"></script>
+<script>
+(function () {
+  var DEMO = [
+    {
+      id: "1",
+      label: "Living",
+      type: "category",
+      path: "Living",
+      depth: 1,
+      children: 1,
+      include: true,
+      canInclude: true
+    },
+    {
+      id: "2",
+      label: "Sofas & lounges",
+      type: "category",
+      path: "Living → Sofas & lounges",
+      depth: 2,
+      children: 1,
+      include: false,
+      canInclude: true
+    },
+    {
+      id: "3",
+      label: "Sectionals",
+      type: "category",
+      path: "Living → Sofas & lounges → Sectionals",
+      depth: 3,
+      children: 0,
+      include: false,
+      canInclude: false
+    },
+    {
+      id: "4",
+      label: "Furniture",
+      type: "collection",
+      path: "Furniture",
+      depth: 1,
+      children: 2,
+      include: false,
+      canInclude: true
+    },
+    {
+      id: "5",
+      label: "Sofas",
+      type: "collection",
+      path: "Furniture → Sofas",
+      depth: 2,
+      children: 2,
+      include: true,
+      canInclude: true
+    },
+    {
+      id: "6",
+      label: "Sectional sofas",
+      type: "collection",
+      path: "Furniture → Sofas → Sectional sofas",
+      depth: 3,
+      children: 0,
+      include: false,
+      canInclude: false
+    },
+    {
+      id: "7",
+      label: "Contact Us",
+      type: "page",
+      path: "Contact",
+      depth: 1,
+      children: 0,
+      include: false,
+      canInclude: false
+    },
+    {
+      id: "8",
+      label: "Custom link",
+      type: "custom",
+      path: "/sale",
+      depth: 1,
+      children: 0,
+      include: false,
+      canInclude: false
+    }
+  ];
+
+  var selectedId = "5";
+  var table = document.getElementById("v3Table");
+
+  function typeLabel(t) {
+    if (t === "page") return "Pages";
+    if (t === "custom") return "Custom URL";
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function render() {
+    table.innerHTML = DEMO.map(function (row) {
+      return (
+        '<div class="v3-row' +
+        (row.id === selectedId ? " is-selected" : "") +
+        '" data-id="' +
+        row.id +
+        '" style="--nest:' +
+        (row.depth - 1) +
+        '">' +
+        '<div class="v3-lead">' +
+        '<input type="checkbox" aria-label="Select" />' +
+        '<span class="handle" title="Drag"><i class="mdi mdi-drag"></i></span>' +
+        "</div>" +
+        '<div class="v3-item">' +
+        '<div class="name">' +
+        escapeHtml(row.label) +
+        "</div>" +
+        '<div class="path">' +
+        escapeHtml(row.path) +
+        "</div></div>" +
+        '<div class="v3-type"><span class="v3-type-chip ' +
+        row.type +
+        '">' +
+        escapeHtml(typeLabel(row.type)) +
+        "</span></div>" +
+        '<div class="v3-kids">' +
+        (row.children
+          ? '<span class="v3-kids-count" title="Nested children available">' +
+            row.children +
+            "</span>"
+          : '<span class="v3-na">—</span>') +
+        "</div>" +
+        '<div class="v3-include">' +
+        (row.canInclude
+          ? '<button type="button" class="v3-switch' +
+            (row.include ? " on" : "") +
+            '" data-include="' +
+            row.id +
+            '" aria-label="Include children" aria-pressed="' +
+            (row.include ? "true" : "false") +
+            '" title="Include nested resources under this item"></button>'
+          : '<span class="v3-na">—</span>') +
+        "</div>" +
+        '<div class="v3-level"><span class="v3-level-chip l' +
+        row.depth +
+        '" title="Menu nesting level">L' +
+        row.depth +
+        "</span></div>" +
+        '<button type="button" class="v3-menu" aria-label="Actions"><i class="mdi mdi-dots-vertical"></i></button>' +
+        "</div>"
+      );
+    }).join("");
+
+    table.querySelectorAll(".v3-row").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        if (e.target.closest("button,input")) return;
+        selectedId = el.getAttribute("data-id");
+        render();
+      });
+    });
+    table.querySelectorAll("[data-include]").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var id = btn.getAttribute("data-include");
+        var row = DEMO.find(function (r) {
+          return r.id === id;
+        });
+        if (!row) return;
+        row.include = !row.include;
+        render();
+        NavV2.toast(
+          "<strong>Include</strong>" +
+            (row.include ? "On" : "Off") +
+            " · " +
+            escapeHtml(row.label)
+        );
+      });
+    });
+  }
+
+  document.getElementById("btnUseProposed").addEventListener("click", function () {
+    NavV2.toast(
+      "<strong>Design only</strong>Proposed columns live in this file — wire into v2 when approved"
+    );
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

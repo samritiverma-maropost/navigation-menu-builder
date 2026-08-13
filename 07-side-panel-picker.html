@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel picker · end-to-end menu builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="_nav.css" />
+  <link rel="stylesheet" href="_nav-v2.css" />
+  <link rel="stylesheet" href="_nav-v7.css" />
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<div class="proto-bar">
+  <strong>v7 · E2E</strong> Add → edit in panel → pick resource inline
+  <a class="proto-pill" href="index.html">Hub</a>
+  <a class="proto-pill" href="05-menu-editor-v2.html">5 · v2</a>
+  <a class="proto-pill" href="06-menu-structure-table.html">6 · Table</a>
+  <a class="proto-pill active" href="07-side-panel-picker.html">7 · Panel E2E</a>
+  <button type="button" class="proto-pill" id="protoReset">Reset</button>
+</div>
+
+<div class="shell" style="min-height:calc(100vh - 37px)">
+  <header class="appbar">
+    <div class="brandcell">MAROPOST</div>
+    <div class="acct">Account 2000293 <span class="chev">&#9662;</span></div>
+    <div class="abar-search"><input placeholder="Search" readonly /></div>
+    <div class="abar-right"><a class="davinci" href="04-davinci-menu-builder.html">Da Vinci</a></div>
+  </header>
+  <div class="body">
+    <aside class="sidebar">
+      <div class="gs"><b>Sandstone Home</b><span>Store · Sales channel</span></div>
+      <div class="nav-sec">
+        <div class="nav-label">Storefront</div>
+        <a class="nav-sub" href="01-navigations.html">Navigations</a>
+        <a class="nav-sub" href="05-menu-editor-v2.html">Main menu · v2</a>
+        <a class="nav-sub active" href="07-side-panel-picker.html">Panel picker · E2E</a>
+      </div>
+    </aside>
+
+    <main class="main editor-page v2-page v7-page">
+      <div class="editor-top">
+        <a class="back" href="01-navigations.html">&#8592; Navigations</a>
+        <input class="title-field" id="menuName" value="Main menu" aria-label="Menu name" />
+        <span class="dirty-pill" id="dirtyPill">Unsaved changes</span>
+        <button type="button" class="btn" id="btnCancel">Cancel</button>
+        <button type="button" class="btn" id="btnPreview">Preview</button>
+        <button type="button" class="btn primary" id="btnSave">Save</button>
+      </div>
+
+      <div class="v7-banner">
+        <i class="mdi mdi-play-circle-outline" aria-hidden="true"></i>
+        <div>
+          <b>End-to-end:</b> click <b>Add</b> → edit name in the panel → change
+          <b>Resource type</b> → pick items in the list that opens below →
+          <b>Apply</b>. Parent + child selections nest in the tree (L1 → L2 → L3).
+        </div>
+      </div>
+
+      <div class="v2-toolbar">
+        <div class="v2-menu-settings">
+          <span class="v2-stat">Functional panel picker · nesting + live tree</span>
+        </div>
+        <div class="spacer"></div>
+        <button type="button" class="btn primary" id="btnAdd">Add</button>
+      </div>
+
+      <div class="editor-body">
+        <section class="tree-pane">
+          <div class="v7-tree-toolbar">
+            <h2>Menu structure</h2>
+            <div class="depth-legend">
+              <span class="dl l1"><i></i> L1</span>
+              <span class="dl l2"><i></i> L2</span>
+              <span class="dl l3"><i></i> L3</span>
+            </div>
+          </div>
+          <p class="tree-dnd-hint">Click a row to edit · nest via multi-select in the panel</p>
+          <div class="v7-cols-head" aria-hidden="true">
+            <span class="c-item">Item</span>
+            <span class="c-kids">Children</span>
+            <span class="c-level">Level</span>
+          </div>
+          <div class="v7-live-tree" id="treeList"></div>
+        </section>
+
+        <aside class="inspector v7-panel">
+          <div class="v7-panel-scroll" id="inspector"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="modal" id="previewModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Theme preview</h3>
+      <button type="button" class="drawer-close" id="previewClose"><i class="mdi mdi-close"></i></button>
+    </div>
+    <p class="preview-cap-note">Nested items show under parents · hidden items omitted</p>
+    <div class="storefront desktop" id="storefront"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="_nav-v2.js"></script>
+<script>
+(function () {
+  var KEY = "navMenuBuilderV7_e2e_v1";
+
+  function emptyState() {
+    return {
+      menuName: "Main menu",
+      maxDepth: 3,
+      items: [],
+      selectedId: null,
+      dirty: true,
+      picking: false
+    };
+  }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return emptyState();
+  }
+
+  function save(s) {
+    localStorage.setItem(KEY, JSON.stringify(s));
+  }
+
+  var state = load();
+  var pickerExpanded = {};
+  var pickerSelected = {};
+  var capAlert = null; /* { total: number } when Apply would exceed storefront limit */
+
+  var menuNameEl = document.getElementById("menuName");
+  var treeList = document.getElementById("treeList");
+  var inspector = document.getElementById("inspector");
+
+  menuNameEl.value = state.menuName || "Main menu";
+  document.getElementById("dirtyPill").hidden = !state.dirty;
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function persist() {
+    state.menuName = menuNameEl.value;
+    state.dirty = true;
+    save(state);
+    document.getElementById("dirtyPill").hidden = false;
+  }
+
+  function findItem(id) {
+    return state.items.find(function (i) {
+      return i.id === id;
+    });
+  }
+
+  function typeLabel(id) {
+    var t = NavV2.RESOURCE_TYPES.find(function (r) {
+      return r.id === id;
+    });
+    return t ? t.label : id;
+  }
+
+  function resourceMeta(it) {
+    if (it.resourceType === "custom") return "Custom · " + (it.link || "/");
+    var cat = NavV2.byId(it.resourceId);
+    if (!cat) return typeLabel(it.resourceType);
+    var path = NavV2.pathOf(cat.id)
+      .map(function (p) {
+        return p.name;
+      })
+      .join(" → ");
+    return typeLabel(it.resourceType) + " · " + path;
+  }
+
+  function applyDepths() {
+    var byId = {};
+    state.items.forEach(function (it) {
+      byId[it.id] = it;
+    });
+    function depthOf(it) {
+      if (!it.parentId) return 1;
+      var p = byId[it.parentId];
+      if (!p) return 1;
+      return Math.min(state.maxDepth, depthOf(p) + 1);
+    }
+    state.items.forEach(function (it) {
+      it.depth = depthOf(it);
+    });
+  }
+
+  function flatTree() {
+    applyDepths();
+    var byParent = {};
+    state.items.forEach(function (it) {
+      var p = it.parentId || "root";
+      if (!byParent[p]) byParent[p] = [];
+      byParent[p].push(it);
+    });
+    var out = [];
+    function walk(pid) {
+      (byParent[pid] || []).forEach(function (it) {
+        out.push(it);
+        walk(it.id);
+      });
+    }
+    walk("root");
+    return out;
+  }
+
+  function menuChildCount(id) {
+    return state.items.filter(function (i) {
+      return i.parentId === id;
+    }).length;
+  }
+
+  function renderTree() {
+    var items = flatTree();
+    if (!items.length) {
+      treeList.innerHTML =
+        '<div class="tree-empty"><h3>No items yet</h3><p>Click <b>Add</b>, then set Resource type in the panel.</p></div>';
+      renderInspector();
+      return;
+    }
+    treeList.innerHTML = items
+      .map(function (it) {
+        var d = it.depth || 1;
+        var kids = menuChildCount(it.id);
+        return (
+          '<div class="v7-live-row' +
+          (it.id === state.selectedId ? " on" : "") +
+          (it.hidden ? " is-hidden" : "") +
+          '" data-id="' +
+          escapeHtml(it.id) +
+          '" style="--nest:' +
+          (d - 1) +
+          '">' +
+          '<div class="v7-live-item">' +
+          '<div class="nm">' +
+          escapeHtml(it.label) +
+          (it.hidden ? ' <i class="mdi mdi-eye-off-outline"></i>' : "") +
+          "</div>" +
+          '<div class="mt">' +
+          escapeHtml(resourceMeta(it)) +
+          "</div></div>" +
+          '<div class="v7-live-kids">' +
+          (kids
+            ? '<span class="v3-kids-count">' + kids + "</span>"
+            : '<span class="v3-na">—</span>') +
+          "</div>" +
+          '<div class="v7-live-lvl"><span class="depth-chip l' +
+          d +
+          '">L' +
+          d +
+          "</span></div></div>"
+        );
+      })
+      .join("");
+
+    treeList.querySelectorAll(".v7-live-row").forEach(function (row) {
+      row.addEventListener("click", function () {
+        state.selectedId = row.getAttribute("data-id");
+        state.picking = false;
+        pickerSelected = {};
+        pickerExpanded = {};
+        persist();
+        renderTree();
+      });
+    });
+    renderInspector();
+  }
+
+  function catalogRowsVisible(type) {
+    var q = ((document.getElementById("pSearch") || {}).value || "").toLowerCase().trim();
+    var all = [];
+    function walk(parentId, depth) {
+      if (depth > state.maxDepth) return;
+      var nodes = NavV2.sortNodes(
+        parentId ? NavV2.childrenOf(parentId, type) : NavV2.rootsOf(type),
+        "az"
+      );
+      nodes.forEach(function (n) {
+        var kids = NavV2.childrenOf(n.id, type);
+        var match = !q || n.name.toLowerCase().indexOf(q) >= 0;
+        if (q) {
+          if (match) {
+            all.push({
+              node: n,
+              depth: depth,
+              kids: kids.length,
+              hasKids: kids.length > 0 && depth < state.maxDepth
+            });
+          }
+          if (kids.length) walk(n.id, depth + 1);
+        } else {
+          all.push({
+            node: n,
+            depth: depth,
+            kids: kids.length,
+            hasKids: kids.length > 0 && depth < state.maxDepth
+          });
+          if (kids.length && pickerExpanded[n.id]) walk(n.id, depth + 1);
+        }
+      });
+    }
+    walk(null, 1);
+    return all;
+  }
+
+  function renderPickerList(type) {
+    var list = document.getElementById("pickList");
+    if (!list) return;
+    var rows = catalogRowsVisible(type);
+    if (!rows.length) {
+      list.innerHTML =
+        '<div class="v7-empty-pick">No resources for this type</div>';
+      return;
+    }
+    list.innerHTML = rows
+      .map(function (r) {
+        var n = r.node;
+        var on = !!pickerSelected[n.id];
+        return (
+          '<div class="v7-pick-row' +
+          (on ? " is-on" : "") +
+          '" style="--nest:' +
+          (r.depth - 1) +
+          '">' +
+          '<div class="left">' +
+          (r.hasKids
+            ? '<button type="button" class="tog' +
+              (pickerExpanded[n.id] ? " open" : "") +
+              '" data-exp="' +
+              escapeHtml(n.id) +
+              '"><i class="mdi mdi-chevron-right"></i></button>'
+            : '<span class="spacer"></span>') +
+          '<input type="checkbox" data-pick="' +
+          escapeHtml(n.id) +
+          '"' +
+          (on ? " checked" : "") +
+          " />" +
+          '<span class="label">' +
+          escapeHtml(n.name) +
+          "</span></div>" +
+          '<div class="kids">' +
+          (r.kids
+            ? "<span>" + r.kids + "</span>"
+            : '<span style="color:#ccc">—</span>') +
+          "</div>" +
+          '<div class="lvl-wrap"><span class="lvl l' +
+          r.depth +
+          '">L' +
+          r.depth +
+          "</span></div></div>"
+        );
+      })
+      .join("");
+
+    list.querySelectorAll("[data-exp]").forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var id = b.getAttribute("data-exp");
+        if (pickerExpanded[id]) delete pickerExpanded[id];
+        else pickerExpanded[id] = true;
+        renderPickerList(type);
+      });
+    });
+    list.querySelectorAll("[data-pick]").forEach(function (cb) {
+      cb.addEventListener("change", function () {
+        var id = cb.getAttribute("data-pick");
+        if (cb.checked) {
+          pickerSelected[id] = true;
+          /* Checking a parent = include its children (same intent as “Include children”) */
+          var kids = [];
+          function walk(pid) {
+            NavV2.childrenOf(pid, type).forEach(function (c) {
+              kids.push(c.id);
+              walk(c.id);
+            });
+          }
+          walk(id);
+          if (kids.length >= NavV2.CHILD_ALERT_THRESHOLD) {
+            kids.forEach(function (kid) {
+              pickerSelected[kid] = true;
+            });
+            pickerExpanded[id] = true;
+            NavV2.toast(
+              "<strong>Included children</strong>" +
+                (kids.length + 1) +
+                " items selected · Apply to continue"
+            );
+          }
+        } else {
+          delete pickerSelected[id];
+          function unwalk(pid) {
+            NavV2.childrenOf(pid, type).forEach(function (c) {
+              delete pickerSelected[c.id];
+              unwalk(c.id);
+            });
+          }
+          unwalk(id);
+        }
+        capAlert = null;
+        renderPickerList(type);
+        renderChips(type);
+      });
+    });
+  }
+
+  function renderChips(type) {
+    var el = document.getElementById("chips");
+    if (!el) return;
+    var ids = Object.keys(pickerSelected);
+    if (!ids.length) {
+      el.innerHTML =
+        '<span style="font-size:12px;color:#999">Select items · parent + child will nest</span>';
+      return;
+    }
+    el.innerHTML = ids
+      .map(function (id) {
+        var c = NavV2.byId(id);
+        var under = null;
+        NavV2.pathOf(id)
+          .slice(0, -1)
+          .reverse()
+          .forEach(function (p) {
+            if (!under && pickerSelected[p.id]) under = p.name;
+          });
+        return (
+          '<span class="chip' +
+          (under ? " chip-child" : "") +
+          '">' +
+          escapeHtml(c ? c.name : id) +
+          (under ? '<span class="chip-under">under ' + escapeHtml(under) + "</span>" : "") +
+          ' <button type="button" data-x="' +
+          escapeHtml(id) +
+          '">×</button></span>'
+        );
+      })
+      .join("");
+    el.querySelectorAll("[data-x]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        delete pickerSelected[b.getAttribute("data-x")];
+        renderPickerList(type);
+        renderChips(type);
+      });
+    });
+  }
+
+  function applyPickerToItem(item, limitOverride) {
+    var ids = Object.keys(pickerSelected);
+    if (!ids.length) {
+      NavV2.toast("<strong>Select a resource</strong>Check at least one item");
+      return;
+    }
+
+    /* Cap check — large “include children” selection (threshold 20+) */
+    if (limitOverride == null && ids.length >= NavV2.CHILD_ALERT_THRESHOLD) {
+      capAlert = { total: ids.length };
+      renderInspector();
+      return;
+    }
+    if (limitOverride != null) {
+      ids.sort(function (a, b) {
+        return NavV2.pathOf(a).length - NavV2.pathOf(b).length;
+      });
+      ids = ids.slice(0, limitOverride);
+      var keep = {};
+      ids.forEach(function (id) {
+        keep[id] = true;
+      });
+      pickerSelected = keep;
+    }
+    capAlert = null;
+
+    ids.sort(function (a, b) {
+      return NavV2.pathOf(a).length - NavV2.pathOf(b).length;
+    });
+
+    var insertParentId = item.parentId || null;
+    var insertDepth = item.depth || 1;
+    var map = {};
+    var nested = 0;
+    var first = true;
+
+    ids.forEach(function (rid) {
+      var cat = NavV2.byId(rid);
+      if (!cat) return;
+      var menuParentId = insertParentId;
+      var depth = insertDepth;
+      var path = NavV2.pathOf(rid);
+      for (var i = path.length - 2; i >= 0; i--) {
+        if (pickerSelected[path[i].id] && map[path[i].id]) {
+          menuParentId = map[path[i].id];
+          var p = findItem(menuParentId);
+          depth = (p ? p.depth || 1 : insertDepth) + 1;
+          nested++;
+          break;
+        }
+      }
+      if (depth > state.maxDepth) return;
+
+      var patch = {
+        label: cat.name,
+        resourceType: cat.type,
+        resourceId: cat.id,
+        link: NavV2.resourcePath(cat),
+        depth: depth,
+        parentId: menuParentId,
+        imageMode: cat.type === "collection" ? "collection" : "none"
+      };
+
+      if (first && menuParentId === insertParentId) {
+        Object.assign(item, patch);
+        map[rid] = item.id;
+        state.selectedId = item.id;
+        first = false;
+      } else {
+        var nid = NavV2.uid("mi");
+        state.items.push(
+          Object.assign(
+            {
+              id: nid,
+              hidden: false,
+              includeChildren: false,
+              childIds: [],
+              status: "ok"
+            },
+            patch
+          )
+        );
+        map[rid] = nid;
+        if (first) {
+          state.selectedId = nid;
+          first = false;
+        }
+      }
+    });
+
+    state.picking = false;
+    pickerSelected = {};
+    pickerExpanded = {};
+    persist();
+    renderTree();
+    NavV2.toast(
+      "<strong>Linked</strong>" +
+        (nested ? nested + " nested under parents · " : "") +
+        "tree updated"
+    );
+  }
+
+  function renderInspector() {
+    var item = findItem(state.selectedId);
+    if (!item) {
+      inspector.innerHTML =
+        '<h3>Item details</h3><p class="sub">Click <b>Add</b> to create a menu item.</p>' +
+        '<div class="inspector-empty">Nothing selected</div>';
+      return;
+    }
+
+    var isCustom = item.resourceType === "custom";
+    var showPick = state.picking || (!isCustom && !item.resourceId);
+
+    inspector.innerHTML =
+      "<h3>Item details</h3>" +
+      '<p class="sub">Feeds storefront mega menu configuration</p>' +
+      '<div class="v7-field"><label for="fName">Menu page name</label>' +
+      '<input id="fName" value="' +
+      escapeHtml(item.label) +
+      '" /></div>' +
+      '<div class="v7-field"><label for="fLink">Link to</label>' +
+      '<input id="fLink" value="' +
+      escapeHtml(item.link || "") +
+      '"' +
+      (isCustom ? "" : " readonly") +
+      " />" +
+      '<p class="v7-hint" style="margin-top:6px">' +
+      (isCustom
+        ? "Editable for Custom URL."
+        : "Filled from the linked resource.") +
+      "</p></div>" +
+      '<div class="v7-field"><label for="fType">Resource type</label>' +
+      '<select id="fType" class="v7-select">' +
+      NavV2.RESOURCE_TYPES.map(function (r) {
+        return (
+          '<option value="' +
+          r.id +
+          '"' +
+          (item.resourceType === r.id ? " selected" : "") +
+          ">" +
+          escapeHtml(r.label) +
+          "</option>"
+        );
+      }).join("") +
+      "</select>" +
+      '<p class="v7-hint" style="margin-top:6px">Choose a type — options open below in this panel.</p></div>' +
+      (showPick && !isCustom
+        ? '<div class="v7-inline-pick">' +
+          '<div class="v7-inline-head"><strong>Choose ' +
+          escapeHtml(typeLabel(item.resourceType).toLowerCase()) +
+          '</strong><span class="v7-inline-badge">In panel</span></div>' +
+          '<div class="v7-pick-box">' +
+          '<div class="v7-pick-tools">' +
+          '<input type="search" id="pSearch" placeholder="Search…" />' +
+          '<button type="button" class="ghost" id="pExpand">Expand all</button>' +
+          "</div>" +
+          '<div class="v7-pick-legend"><span class="l1"><i></i>L1</span><span class="l2"><i></i>L2</span><span class="l3"><i></i>L3</span></div>' +
+          '<div class="v7-pick-cols"><span>Item</span><span>Children</span><span>Level</span></div>' +
+          '<div class="v7-pick-list" id="pickList"></div></div>' +
+          '<div class="v7-chips" id="chips"></div>' +
+          (capAlert
+            ? '<div class="child-alert" role="alert" style="margin-top:10px">' +
+              "<p style=\"margin:0 0 10px\"><b>" +
+              capAlert.total +
+              "</b> selected (including children). Storefront max is <b>" +
+              NavV2.STOREFRONT_LIMIT +
+              "</b>.</p>" +
+              '<div class="actions">' +
+              '<button type="button" class="btn primary" id="cap50">Add up to ' +
+              NavV2.STOREFRONT_LIMIT +
+              "</button>" +
+              '<button type="button" class="btn" id="cap9">Add ' +
+              NavV2.DISPLAY_CAP +
+              "</button>" +
+              '<button type="button" class="btn" id="capCancel">Cancel</button>' +
+              "</div></div>"
+            : '<button type="button" class="btn primary" id="btnApply" style="width:100%;margin-top:8px">Apply to menu</button>') +
+          "</div>"
+        : "") +
+      (!isCustom && item.resourceId && !showPick
+        ? '<div class="v7-field"><label>Linked resource</label>' +
+          '<div class="v7-linked">' +
+          escapeHtml(resourceMeta(item)) +
+          "</div>" +
+          '<button type="button" class="btn" id="btnChange" style="width:100%;margin-top:8px">Change selection</button></div>'
+        : "") +
+      '<div class="v7-insp-actions">' +
+      '<button type="button" class="btn" id="inspHide" style="width:100%">' +
+      (item.hidden ? "Unhide on storefront" : "Hide on storefront") +
+      "</button>" +
+      '<button type="button" class="btn" id="inspDelete" style="width:100%">Remove from menu</button>' +
+      "</div>";
+
+    document.getElementById("fName").addEventListener("change", function () {
+      item.label = this.value.trim() || "Untitled";
+      persist();
+      renderTree();
+    });
+    document.getElementById("fLink").addEventListener("change", function () {
+      if (item.resourceType !== "custom") return;
+      item.link = this.value;
+      persist();
+      renderTree();
+    });
+    document.getElementById("fType").addEventListener("change", function () {
+      var next = this.value;
+      item.resourceType = next;
+      item.resourceId = null;
+      item.imageMode = "none";
+      pickerSelected = {};
+      pickerExpanded = {};
+      if (next === "custom") {
+        item.link = item.link || "/";
+        state.picking = false;
+      } else {
+        item.link = "";
+        state.picking = true;
+      }
+      persist();
+      renderTree();
+    });
+
+    var btnApply = document.getElementById("btnApply");
+    if (btnApply || capAlert) {
+      renderPickerList(item.resourceType);
+      renderChips(item.resourceType);
+      var pSearch = document.getElementById("pSearch");
+      if (pSearch) {
+        pSearch.addEventListener("input", function () {
+          renderPickerList(item.resourceType);
+        });
+      }
+      var pExpand = document.getElementById("pExpand");
+      if (pExpand) {
+        pExpand.addEventListener("click", function () {
+          NavV2.CATALOG.forEach(function (n) {
+            if (n.type === item.resourceType && NavV2.childrenOf(n.id, item.resourceType).length) {
+              pickerExpanded[n.id] = true;
+            }
+          });
+          renderPickerList(item.resourceType);
+        });
+      }
+      if (btnApply) {
+        btnApply.addEventListener("click", function () {
+          applyPickerToItem(item);
+        });
+      }
+      var cap50 = document.getElementById("cap50");
+      var cap9 = document.getElementById("cap9");
+      var capCancel = document.getElementById("capCancel");
+      if (cap50) {
+        cap50.addEventListener("click", function () {
+          applyPickerToItem(item, NavV2.STOREFRONT_LIMIT);
+        });
+      }
+      if (cap9) {
+        cap9.addEventListener("click", function () {
+          applyPickerToItem(item, NavV2.DISPLAY_CAP);
+        });
+      }
+      if (capCancel) {
+        capCancel.addEventListener("click", function () {
+          capAlert = null;
+          renderInspector();
+        });
+      }
+    }
+    var btnChange = document.getElementById("btnChange");
+    if (btnChange) {
+      btnChange.addEventListener("click", function () {
+        state.picking = true;
+        pickerSelected = {};
+        if (item.resourceId) pickerSelected[item.resourceId] = true;
+        persist();
+        renderTree();
+      });
+    }
+    document.getElementById("inspHide").addEventListener("click", function () {
+      item.hidden = !item.hidden;
+      persist();
+      renderTree();
+    });
+    document.getElementById("inspDelete").addEventListener("click", function () {
+      var blocked = {};
+      function mark(id) {
+        blocked[id] = true;
+        state.items.forEach(function (i) {
+          if (i.parentId === id) mark(i.id);
+        });
+      }
+      mark(item.id);
+      state.items = state.items.filter(function (i) {
+        return !blocked[i.id];
+      });
+      state.selectedId = state.items[0] ? state.items[0].id : null;
+      state.picking = false;
+      persist();
+      renderTree();
+      NavV2.toast("<strong>Removed</strong>Item deleted from menu");
+    });
+  }
+
+  function addItem() {
+    var id = NavV2.uid("mi");
+    state.items.push({
+      id: id,
+      label: "New item",
+      resourceType: "collection",
+      resourceId: null,
+      link: "",
+      depth: 1,
+      parentId: null,
+      imageMode: "none",
+      hidden: false,
+      includeChildren: false,
+      childIds: [],
+      status: "ok"
+    });
+    state.selectedId = id;
+    state.picking = true;
+    pickerSelected = {};
+    pickerExpanded = {};
+    persist();
+    renderTree();
+    setTimeout(function () {
+      var el = document.getElementById("fName");
+      if (el) {
+        el.focus();
+        el.select();
+      }
+    }, 0);
+    NavV2.toast("<strong>Added</strong>Pick collections in the panel, then Apply");
+  }
+
+  function openPreview() {
+    var items = flatTree().filter(function (i) {
+      return !i.hidden;
+    });
+    var roots = items.filter(function (i) {
+      return !i.parentId;
+    });
+    function kidsOf(id) {
+      return items.filter(function (i) {
+        return i.parentId === id;
+      });
+    }
+    function renderBranch(node) {
+      var kids = kidsOf(node.id);
+      return (
+        "<div style='margin:4px 0 4px " +
+        ((node.depth || 1) - 1) * 16 +
+        "px'><b>" +
+        escapeHtml(node.label) +
+        "</b> <span style='color:#888;font-size:12px'>L" +
+        (node.depth || 1) +
+        "</span>" +
+        (kids.length
+          ? kids
+              .map(function (k) {
+                return renderBranch(k);
+              })
+              .join("")
+          : "") +
+        "</div>"
+      );
+    }
+    document.getElementById("storefront").innerHTML =
+      roots.map(renderBranch).join("") ||
+      "<p style='padding:16px;color:#666'>Empty menu — add items first</p>";
+    document.getElementById("previewModal").classList.add("open");
+  }
+
+  document.getElementById("btnAdd").addEventListener("click", addItem);
+  document.getElementById("btnSave").addEventListener("click", function () {
+    state.dirty = false;
+    save(state);
+    document.getElementById("dirtyPill").hidden = true;
+    NavV2.toast("<strong>Saved</strong>" + escapeHtml(state.menuName));
+  });
+  document.getElementById("btnCancel").addEventListener("click", function () {
+    if (state.dirty && !confirm("Discard unsaved changes?")) return;
+    location.href = "01-navigations.html";
+  });
+  document.getElementById("btnPreview").addEventListener("click", openPreview);
+  document.getElementById("previewClose").addEventListener("click", function () {
+    document.getElementById("previewModal").classList.remove("open");
+  });
+  document.getElementById("protoReset").addEventListener("click", function () {
+    if (!confirm("Reset this E2E prototype?")) return;
+    localStorage.removeItem(KEY);
+    state = emptyState();
+    menuNameEl.value = state.menuName;
+    renderTree();
+    NavV2.toast("<strong>Reset</strong>Start with Add");
+  });
+  menuNameEl.addEventListener("input", persist);
+
+  if (!state.items.length) {
+    /* start empty so Add is obvious */
+  } else if (!state.selectedId && state.items[0]) {
+    state.selectedId = state.items[0].id;
+  }
+
+  renderTree();
+})();
+</script>
+</body>
+</html>

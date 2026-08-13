@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedback close-out · share board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="_nav.css" />
+  <link rel="stylesheet" href="_nav-v2.css" />
+  <link rel="stylesheet" href="_nav-v8.css" />
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<div class="proto-bar">
+  <strong>8 · Close-out</strong> Share board · all review gaps in one place
+  <a class="proto-pill" href="index.html">Hub</a>
+  <a class="proto-pill" href="05-menu-editor-v2.html">5 · Live v2</a>
+  <a class="proto-pill active" href="08-feedback-closeout.html">8 · Share board</a>
+  <a class="proto-pill" href="https://www.figma.com/design/5Dd6KVq8SSMgZiwzPk4rsE/Navigation-menu-builder?node-id=11100-44617" target="_blank" rel="noopener">Figma</a>
+</div>
+
+<main class="v8-board">
+  <header class="v8-intro">
+    <div>
+      <h1>Feedback close-out</h1>
+      <p>
+        Three UI states that close the review gaps: complete resource types
+        (no Container), bulk toolbar, and include-children over-cap alert.
+        Font: Roboto only.
+      </p>
+    </div>
+    <div class="v8-chips">
+      <span class="v8-chip on">Resource types</span>
+      <span class="v8-chip on">Bulk bar</span>
+      <span class="v8-chip on">Limit alert</span>
+      <span class="v8-chip on">No Container</span>
+    </div>
+  </header>
+
+  <!-- A · Resource type open -->
+  <section class="v8-panel" id="resource-types">
+    <div class="v8-panel-head">
+      <span class="v8-num">A</span>
+      <div>
+        <h2>Resource type · open (complete list)</h2>
+        <p>Full decided list in the side panel. <b>Container is not an option.</b></p>
+      </div>
+    </div>
+    <div class="v8-stage">
+      <div class="v8-editor">
+        <div class="v8-top">
+          <span class="back">← Navigations</span>
+          <span class="title">Main menu</span>
+          <span class="dirty">Unsaved changes</span>
+          <span class="btns"><button type="button" class="btn">Cancel</button><button type="button" class="btn">Preview</button><button type="button" class="btn primary">Save</button></span>
+        </div>
+        <div class="v8-body">
+          <div class="v8-tree">
+            <div class="v8-tree-label">Menu structure</div>
+            <div class="v8-row on">
+              <span class="nm">Furniture</span>
+              <span class="meta">Collection · Furniture</span>
+              <span class="depth-chip l1">L1</span>
+            </div>
+            <div class="v8-row nest">
+              <span class="nm">Sofas</span>
+              <span class="meta">Collection · Furniture → Sofas</span>
+              <span class="depth-chip l2">L2</span>
+            </div>
+            <div class="v8-row">
+              <span class="nm">About us</span>
+              <span class="meta">Pages · About us</span>
+              <span class="depth-chip l1">L1</span>
+            </div>
+          </div>
+          <aside class="v8-insp">
+            <h3>Item details</h3>
+            <p class="sub">Feeds storefront mega menu configuration</p>
+            <label class="fld">Menu page name<input value="Furniture" readonly /></label>
+            <label class="fld">Link to<input value="/collections/furniture" readonly /></label>
+            <div class="fld open">
+              <span class="lbl">Resource type</span>
+              <button type="button" class="select open" aria-expanded="true">Collection <i class="mdi mdi-chevron-up"></i></button>
+              <ul class="menu" role="listbox" aria-label="Resource type">
+                <li>Custom URL</li>
+                <li class="on">Collection</li>
+                <li>Category</li>
+                <li>Pages</li>
+                <li>Blog</li>
+                <li>Policy</li>
+                <li>Orders</li>
+                <li>Profile settings</li>
+              </ul>
+              <p class="note">No Container · Blog / Policy / Orders / Profile included</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- B · Bulk -->
+  <section class="v8-panel" id="bulk">
+    <div class="v8-panel-head">
+      <span class="v8-num">B</span>
+      <div>
+        <h2>Bulk · 3 selected</h2>
+        <p>Toolbar above the tree after multi-select — Hide / Unhide / Remove / Clear.</p>
+      </div>
+    </div>
+    <div class="v8-stage">
+      <div class="v8-editor">
+        <div class="v8-top">
+          <span class="back">← Navigations</span>
+          <span class="title">Main menu</span>
+          <span class="dirty">Unsaved changes</span>
+          <span class="btns"><button type="button" class="btn">Cancel</button><button type="button" class="btn">Preview</button><button type="button" class="btn primary">Save</button></span>
+        </div>
+        <div class="v8-body">
+          <div class="v8-tree">
+            <div class="v2-bulk open" role="status">
+              <span><span class="count">3</span> selected</span>
+              <button type="button" class="btn primary">Hide</button>
+              <button type="button" class="btn ghost">Unhide</button>
+              <button type="button" class="btn ghost">Remove</button>
+              <button type="button" class="btn ghost">Clear</button>
+            </div>
+            <div class="v8-tree-label">Menu structure</div>
+            <div class="v8-row checked">
+              <input type="checkbox" checked disabled />
+              <span class="nm">Furniture</span>
+              <span class="depth-chip l1">L1</span>
+            </div>
+            <div class="v8-row nest checked">
+              <input type="checkbox" checked disabled />
+              <span class="nm">Sofas</span>
+              <span class="depth-chip l2">L2</span>
+            </div>
+            <div class="v8-row checked">
+              <input type="checkbox" checked disabled />
+              <span class="nm">Sale</span>
+              <span class="depth-chip l1">L1</span>
+            </div>
+            <div class="v8-row">
+              <input type="checkbox" disabled />
+              <span class="nm">About us</span>
+              <span class="depth-chip l1">L1</span>
+            </div>
+          </div>
+          <aside class="v8-insp muted">
+            <h3>Item details</h3>
+            <p class="sub">Bulk actions use the tree toolbar — not only this panel.</p>
+            <div class="inspector-empty">3 items selected</div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- C · Over-cap alert -->
+  <section class="v8-panel" id="alert">
+    <div class="v8-panel-head">
+      <span class="v8-num">C</span>
+      <div>
+        <h2>Include children · over-cap alert</h2>
+        <p>Shows count, supported cap, and ways to adjust before adding.</p>
+      </div>
+    </div>
+    <div class="v8-stage">
+      <div class="v8-editor">
+        <div class="v8-top">
+          <span class="back">← Navigations</span>
+          <span class="title">Main menu</span>
+          <span class="dirty">Unsaved changes</span>
+          <span class="btns"><button type="button" class="btn">Cancel</button><button type="button" class="btn">Preview</button><button type="button" class="btn primary">Save</button></span>
+        </div>
+        <div class="v8-body">
+          <div class="v8-tree">
+            <div class="v8-tree-label">Menu structure</div>
+            <div class="v8-row on">
+              <span class="nm">Outdoor</span>
+              <span class="meta">Include children · pending</span>
+              <label class="inc"><input type="checkbox" checked disabled /> Include</label>
+              <span class="depth-chip l1">L1</span>
+            </div>
+            <div class="v8-row muted-row">
+              <span class="nm">… 100 child collections would be added</span>
+            </div>
+          </div>
+          <aside class="v8-insp">
+            <h3>Item details</h3>
+            <p class="sub">Outdoor · Collection</p>
+            <div class="child-alert" role="alert">
+              <strong>Include child collections</strong> would add <b>100</b> items.
+              Supported storefront limit is <b>50</b> — anything past that simply does not show (no See more).
+              <div class="actions">
+                <button type="button" class="btn primary">Add first 50</button>
+                <button type="button" class="btn">Add first 9</button>
+                <button type="button" class="btn">Cancel</button>
+              </div>
+            </div>
+            <label class="fld">Menu page name<input value="Outdoor" readonly /></label>
+            <label class="fld">Resource type<input value="Collection" readonly /></label>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="v8-foot">
+    <p>
+      Interactive version:
+      <a href="05-menu-editor-v2.html">05 · Menu editor v2</a>
+      (bulk + alert live). Capture these frames into Figma with the HTML-to-design plugin, or ask to push them to ► Design iteration.
+    </p>
+  </footer>
+</main>
+</body>
+</html>

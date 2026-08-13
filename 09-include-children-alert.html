@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How the alert fits your panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="_nav.css" />
+  <link rel="stylesheet" href="_nav-v2.css" />
+  <link rel="stylesheet" href="_nav-v9.css" />
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<div class="proto-bar">
+  <strong>9 · Maps to your UI</strong>
+  <a class="proto-pill" href="index.html">Hub</a>
+  <a class="proto-pill" href="07-side-panel-picker.html">Try in panel picker →</a>
+  <a class="proto-pill active" href="09-include-children-alert.html">How it fits</a>
+</div>
+
+<main class="v9s">
+  <p class="v9s-problem">
+    <b>In your design</b> there is no separate “Include children” toggle.
+    Checking a big parent in the panel picker <b>includes its children</b>.
+    If that is over the cap → alert appears <b>above Apply</b>.
+  </p>
+
+  <div class="v9s-tabs" role="tablist">
+    <button type="button" class="on" data-step="1" role="tab">1 · Check Outdoor</button>
+    <button type="button" data-step="2" role="tab">2 · Alert</button>
+    <button type="button" data-step="3" role="tab">3 · Menu updated</button>
+  </div>
+
+  <div class="v9s-stage" id="stage"></div>
+
+  <p class="v9s-try">
+    <a class="btn primary" href="07-side-panel-picker.html">Open your panel picker</a>
+    &nbsp; Add → Collection → check <b>Outdoor</b> → Apply
+  </p>
+</main>
+
+<script>
+(function () {
+  var step = 1;
+  var stage = document.getElementById("stage");
+  var tabs = document.querySelectorAll(".v9s-tabs button");
+
+  function ui(s) {
+    if (s === 1) {
+      return (
+        '<div class="v9s-card map">' +
+        '<div class="v9s-left">' +
+        '<p class="v9s-label">Menu structure</p>' +
+        '<div class="v9s-row"><div><b>Furniture</b><span>empty draft</span></div><i>L1</i></div>' +
+        "</div>" +
+        "<aside>" +
+        "<h3>Item details</h3>" +
+        '<p class="v9s-label">Choose collection</p>' +
+        '<div class="v9s-pick">' +
+        '<label class="v9s-pick-row"><input type="checkbox" id="tog" /> Outdoor <em>33 kids</em></label>' +
+        '<label class="v9s-pick-row"><input type="checkbox" disabled /> Furniture</label>' +
+        "</div>" +
+        '<button type="button" class="btn primary" style="width:100%;margin-top:12px" disabled>Apply to menu</button>' +
+        '<p class="v9s-note">Check Outdoor → children auto-selected</p>' +
+        "</aside></div>"
+      );
+    }
+    if (s === 2) {
+      return (
+        '<div class="v9s-card map">' +
+        '<div class="v9s-left">' +
+        '<p class="v9s-label">Menu structure</p>' +
+        '<div class="v9s-row"><div><b>Furniture</b><span>waiting…</span></div><i>L1</i></div>' +
+        "</div>" +
+        "<aside>" +
+        "<h3>Item details</h3>" +
+        '<p class="v9s-label">Choose collection · 34 selected</p>' +
+        '<div class="v9s-alert">' +
+        "<p><b>34</b> selected (with children). Storefront max <b>50</b>.</p>" +
+        '<div class="v9s-acts">' +
+        '<button type="button" class="btn primary" data-go="3">Add up to 50</button>' +
+        '<button type="button" class="btn" data-go="3">Add 9</button>' +
+        '<button type="button" class="btn" data-go="1">Cancel</button>' +
+        "</div></div>" +
+        "</aside></div>"
+      );
+    }
+    return (
+      '<div class="v9s-card map">' +
+      '<div class="v9s-left">' +
+      '<p class="v9s-label">Menu structure</p>' +
+      '<div class="v9s-row on"><div><b>Outdoor</b><span>Collection</span></div><i>L1</i></div>' +
+      '<div class="v9s-row nest"><div><b>Outdoor Sofa</b></div><i>L2</i></div>' +
+      '<div class="v9s-row nest"><div><b>Craftsman</b></div><i>L2</i></div>' +
+      '<div class="v9s-more">+ more nested</div>' +
+      "</div>" +
+      '<aside><h3>Item details</h3>' +
+      '<p class="v9s-ok">Linked. Alert gone.</p>' +
+      "</aside></div>"
+    );
+  }
+
+  function render() {
+    tabs.forEach(function (b) {
+      b.classList.toggle("on", +b.getAttribute("data-step") === step);
+    });
+    stage.innerHTML = ui(step);
+    var tog = document.getElementById("tog");
+    if (tog) {
+      tog.addEventListener("change", function () {
+        if (tog.checked) go(2);
+      });
+    }
+    stage.querySelectorAll("[data-go]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        go(+b.getAttribute("data-go"));
+      });
+    });
+  }
+
+  function go(n) {
+    step = n;
+    render();
+  }
+
+  tabs.forEach(function (b) {
+    b.addEventListener("click", function () {
+      go(+b.getAttribute("data-step"));
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

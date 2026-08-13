@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Current navigation editor (as-is)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="_nav.css" />
+  <style>
+    .asis-stack { display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
+    .asis-row {
+      background: var(--ls-surface);
+      border: 1px solid var(--ls-divider);
+      border-radius: var(--ls-radius-lg);
+      box-shadow: var(--ls-elev-1);
+      padding: 20px 16px 12px;
+    }
+    .asis-row .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .pain {
+      margin-top: 20px;
+      padding: 14px 16px 14px 44px;
+      background: var(--ls-warning-bg);
+      border-radius: var(--ls-radius);
+      box-shadow: var(--ls-elev-1);
+      font-size: 14px;
+      letter-spacing: 0.25px;
+      color: var(--ls-on-high);
+      max-width: 720px;
+      position: relative;
+    }
+    .pain::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 16px;
+      width: 20px;
+      height: 20px;
+      background: var(--ls-warning);
+      border-radius: 50%;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2v-4h2v4z'/%3E%3C/svg%3E") center/contain no-repeat;
+      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2v-4h2v4z'/%3E%3C/svg%3E") center/contain no-repeat;
+    }
+    .pain strong { font-weight: 500; letter-spacing: 0.1px; display: block; margin-bottom: 4px; }
+    .pain ul { margin: 8px 0 0; padding-left: 18px; color: var(--ls-on-medium); }
+  </style>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<div class="proto-bar">
+  <strong>Contrast</strong> Current one-by-one setup
+  <a class="proto-pill" href="index.html">Hub</a>
+  <a class="proto-pill" href="01-navigations.html">1 · List</a>
+  <a class="proto-pill active" href="02-current-as-is.html">2 · Current</a>
+  <a class="proto-pill" href="03-menu-editor.html">3 · Proposed</a>
+</div>
+
+<div class="shell">
+  <header class="appbar">
+    <div class="brandcell">MAROPOST</div>
+    <div class="acct">Account 2000293 <span class="chev">&#9662;</span></div>
+    <div class="abar-search"><input placeholder="Search" readonly /></div>
+  </header>
+  <div class="body">
+    <aside class="sidebar">
+      <div class="gs"><b>Sandstone Home</b><span>Store · Sales channel</span></div>
+      <div class="nav-sec">
+        <div class="nav-label">Storefront</div>
+        <a class="nav-sub" href="01-navigations.html">Navigations</a>
+        <a class="nav-sub active" href="02-current-as-is.html">Current editor</a>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="page">
+        <nav class="breadcrumb">
+          <a href="01-navigations.html">Navigations</a><span class="sep">&#8250;</span>
+          <span class="cur">Edit menu (as-is)</span>
+        </nav>
+        <div class="page-head">
+          <div>
+            <h1>Create / edit navigation · current</h1>
+            <p class="sub">Approximation of today’s UAT flow: add each page, pick link, nest manually.</p>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button type="button" class="btn" disabled>Preview</button>
+            <button type="button" class="btn primary" disabled>Save</button>
+          </div>
+        </div>
+
+        <div class="field" style="max-width:320px;margin-bottom:20px">
+          <input value="Main menu" readonly id="asisMenuName" />
+          <label for="asisMenuName">Menu name</label>
+        </div>
+        <div class="status-toggle" style="margin-bottom:16px">
+          <button type="button" class="switch on" aria-label="Active"></button>
+          Navigation status · Active
+        </div>
+
+        <div class="asis-stack">
+          <div class="asis-row">
+            <div class="grid">
+              <div class="field" style="margin:0">
+                <input value="Outdoor" id="p1" />
+                <label for="p1">Menu page name</label>
+              </div>
+              <div class="field" style="margin:0">
+                <input value="Collection · Outdoor" id="l1" />
+                <label for="l1">Link to</label>
+              </div>
+            </div>
+            <button type="button" class="btn ghost" style="margin-top:8px" disabled>Add Subpage</button>
+          </div>
+          <div class="asis-row" style="margin-left:24px;border-style:dashed">
+            <div class="grid">
+              <div class="field" style="margin:0">
+                <input value="Umbrellas" id="p2" />
+                <label for="p2">Menu page name</label>
+              </div>
+              <div class="field" style="margin:0">
+                <input value="Collection · Umbrellas" id="l2" />
+                <label for="l2">Link to</label>
+              </div>
+            </div>
+          </div>
+          <div class="asis-row" style="margin-left:24px;border-style:dashed">
+            <div class="grid">
+              <div class="field" style="margin:0">
+                <input placeholder="Next child…" id="p3" />
+                <label for="p3">Menu page name</label>
+              </div>
+              <div class="field" style="margin:0">
+                <input placeholder="Search collection…" id="l3" />
+                <label for="l3">Link to</label>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn" disabled>Add New Page</button>
+        </div>
+
+        <div class="pain">
+          <strong>Why this fails for complex catalogs</strong>
+          <ul>
+            <li>One collection per action — painful at 1,000+ collections</li>
+            <li>Child nesting is fully manual (Add Subpage × N)</li>
+            <li>No multi-select, no preview, no image for mega menu</li>
+            <li>Flat visual hierarchy — hard to see depth / errors</li>
+          </ul>
+        </div>
+
+        <p style="margin-top:20px">
+          <a class="btn primary" href="03-menu-editor.html?reset=1">See proposed editor <span class="click-hint">Click</span></a>
+        </p>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="_nav.js"></script>
+<script>
+  document.querySelector('a[href*="reset=1"]').addEventListener("click", function () {
+    NavProto.reset();
+  });
+</script>
+</body>
+</html>

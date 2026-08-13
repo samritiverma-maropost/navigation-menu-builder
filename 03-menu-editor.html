@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Menu editor · proposed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="_nav.css" />
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<div class="proto-bar">
+  <strong>Proposed</strong> Phase 1 editor
+  <a class="proto-pill" href="index.html">Hub</a>
+  <a class="proto-pill" href="01-navigations.html">1 · List</a>
+  <a class="proto-pill" href="02-current-as-is.html">2 · Current</a>
+  <a class="proto-pill active" href="03-menu-editor.html">3 · Proposed</a>
+  <button type="button" class="proto-pill" id="protoReset">Reset</button>
+</div>
+
+<div class="shell" style="min-height:calc(100vh - 37px)">
+  <header class="appbar">
+    <div class="brandcell">MAROPOST</div>
+    <div class="acct">Account 2000293 <span class="chev">&#9662;</span></div>
+    <div class="abar-search"><input placeholder="Search" readonly /></div>
+    <div class="abar-right"><button type="button" class="davinci" id="davinciHint">Da Vinci</button></div>
+  </header>
+  <div class="body">
+    <aside class="sidebar">
+      <div class="gs"><b>Sandstone Home</b><span>Store · Sales channel</span></div>
+      <div class="nav-sec">
+        <div class="nav-label">Storefront</div>
+        <a class="nav-sub" href="01-navigations.html">Navigations</a>
+        <a class="nav-sub active" href="#" id="sideMenuName">Menu</a>
+      </div>
+    </aside>
+    <main class="main editor-page">
+      <div class="editor-top">
+        <a class="back" href="01-navigations.html" id="btnBack">&#8592; Navigations</a>
+        <input class="title-field" id="menuName" value="Main menu" aria-label="Menu name" />
+        <div class="status-toggle">
+          <button type="button" class="switch on" id="statusSwitch" aria-pressed="true"></button>
+          <span id="statusLabel">Active</span>
+        </div>
+        <span class="dirty-pill" id="dirtyPill" hidden>Unsaved changes</span>
+        <button type="button" class="btn" id="btnCancel">Cancel</button>
+        <button type="button" class="btn" id="btnPreview">Preview</button>
+        <button type="button" class="btn primary" id="btnSave">Save</button>
+      </div>
+
+      <div class="editor-body">
+        <section class="tree-pane">
+          <div class="tree-toolbar">
+            <h2>Menu structure</h2>
+            <div class="btn-group">
+              <button type="button" class="btn" id="btnAddItem">Add item</button>
+              <button type="button" class="btn primary" id="btnAddCollections">Add collections <span class="click-hint">Click</span></button>
+            </div>
+          </div>
+          <p class="tree-dnd-hint"><i class="mdi mdi-drag" aria-hidden="true"></i> Drag items to reorder · drop on the middle of a row to nest (max 3 levels)</p>
+          <div class="tree-list" id="treeList"></div>
+        </section>
+
+        <aside class="inspector" id="inspector"></aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Bulk drawer -->
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <h2>Add collections</h2>
+    <button type="button" class="drawer-close" id="drawerClose" aria-label="Close"><i class="mdi mdi-close" aria-hidden="true"></i></button>
+  </div>
+  <div class="drawer-body">
+    <div class="tabs" role="tablist">
+      <button type="button" class="on" data-tab="collection">Collections</button>
+      <button type="button" data-tab="category">Categories</button>
+      <button type="button" data-tab="page">Pages</button>
+    </div>
+    <div class="search-box">
+      <i class="mdi mdi-magnify" aria-hidden="true" style="color:var(--ls-on-medium);font-size:20px"></i>
+      <input id="pickSearch" placeholder="Search catalog…" />
+    </div>
+    <div class="toggle-row">
+      <div>
+        <strong>Include child collections</strong>
+        <div style="font-size:12px;color:var(--ls-on-disabled);margin-top:2px;letter-spacing:0.4px">
+          When on, selected parents also pull nested children into the menu (max 3 levels).
+        </div>
+      </div>
+      <button type="button" class="switch" id="includeChildren" aria-pressed="false"></button>
+    </div>
+    <div class="pick-legend" aria-label="Badge meanings">
+      <div><span class="badge depth">Level 1 · nests 2 levels</span> <span class="pick-legend-txt">Where it sits · how deep children go</span></div>
+      <div><span class="badge">Level 1 · no children</span> <span class="pick-legend-txt">Nothing nested under this collection</span></div>
+      <div><span class="badge in">In menu</span> <span class="pick-legend-txt">Already added to this menu</span></div>
+    </div>
+    <div class="pick-select-all" id="pickSelectAllRow">
+      <label class="pick-item pick-item-master">
+        <input type="checkbox" id="pickSelectAll" />
+        <div>
+          <div class="name" id="pickSelectAllLabel">Select all</div>
+          <div class="sub" id="pickVisibleMeta">0 visible</div>
+        </div>
+      </label>
+    </div>
+    <div class="pick-list" id="pickList"></div>
+  </div>
+  <div class="drawer-foot" id="drawerFootIdle">
+    <span id="pickCountIdle" style="font-size:13px;color:var(--ink-2)">Select collections to add</span>
+    <div style="display:flex;gap:8px">
+      <button type="button" class="btn" id="drawerCancel">Cancel</button>
+      <button type="button" class="btn primary" id="drawerAdd" disabled>Add to menu</button>
+    </div>
+  </div>
+  <!-- Orders-style bulk selection bar (adapted for drawer) -->
+  <div class="drawer-bulk-bar" id="drawerBulkBar" hidden role="status" aria-label="Bulk actions">
+    <div class="drawer-bulk-meta">
+      <span class="drawer-bulk-count" id="pickCount">0</span>
+      <span class="drawer-bulk-label">selected</span>
+    </div>
+    <button type="button" class="btn ghost drawer-bulk-link" id="pickSelectAllFiltered">Select all</button>
+    <button type="button" class="btn primary" id="drawerAddBulk">Add to menu</button>
+    <button type="button" class="btn ghost drawer-bulk-link" id="pickClearSelection">Clear selection</button>
+  </div>
+</aside>
+
+<!-- Row context menu -->
+<div class="context-menu" id="ctxMenu">
+  <button type="button" data-act="children">Add child collections</button>
+  <button type="button" data-act="indent">Indent</button>
+  <button type="button" data-act="outdent">Outdent</button>
+  <button type="button" data-act="delete" class="danger">Remove from menu</button>
+</div>
+
+<!-- Preview -->
+<div class="preview-modal" id="previewModal" role="dialog" aria-label="Menu preview">
+  <div class="preview-card">
+    <div class="preview-head">
+      <h2>Storefront preview</h2>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="device-toggle">
+          <button type="button" class="on" data-device="desktop">Desktop</button>
+          <button type="button" data-device="mobile">Mobile</button>
+        </div>
+        <button type="button" class="drawer-close" id="previewClose" aria-label="Close"><i class="mdi mdi-close" aria-hidden="true"></i></button>
+      </div>
+    </div>
+    <div class="preview-body">
+      <div class="storefront desktop" id="storefront">
+        <div class="sf-top">
+          <div class="sf-logo">SANDSTONE</div>
+          <nav class="sf-nav" id="sfNav"></nav>
+          <div style="font-size:13px;color:var(--ink-3)">Bag · Account</div>
+        </div>
+        <div class="mobile-menu" id="mobileMenu"></div>
+        <div class="sf-hero">Homepage · hover a top item to see mega menu (desktop)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="_nav.js"></script>
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var pickTab = "collection";
+  var selectedPick = {};
+  var ctxItemId = null;
+  var state;
+
+  // Resolve which menu to edit
+  var figmaScenario = params.get("figma");
+  var figmaMeta = null;
+  if (figmaScenario) {
+    figmaMeta = NavProto.seedFigmaScenario(figmaScenario);
+    state = figmaMeta.draft;
+    if (figmaMeta.focusId) state.selectedId = figmaMeta.focusId;
+  } else if (params.get("new") === "1" || params.get("reset") === "1") {
+    state = NavProto.createNewMenu({
+      menuName: params.get("name") || "Untitled menu",
+      journey: params.get("journey")
+    });
+  } else if (params.get("id")) {
+    state = NavProto.openMenu(params.get("id"));
+    if (!state) {
+      NavProto.toast("<strong>Menu not found</strong>Starting a new menu");
+      state = NavProto.createNewMenu();
+    }
+  } else if (params.get("seed") === "complex") {
+    state = NavProto.seedComplexMenu();
+  } else if (params.get("seed") === "outdoor") {
+    state = NavProto.createNewMenu({ menuName: "Main menu" });
+    state.items = NavProto.buildFromSelection(["outdoor"], false);
+    state.selectedId = state.items[0] ? state.items[0].id : null;
+    state.dirty = true;
+    NavProto.saveDraft(state);
+  } else {
+    // Resume draft if dirty/new, else open Main menu
+    var existing = NavProto.loadDraft();
+    if (existing && (existing.dirty || existing.isNew)) {
+      state = existing;
+    } else if (existing && existing.id && NavProto.getMenu(existing.id)) {
+      state = NavProto.openMenu(existing.id);
+    } else {
+      state = NavProto.openMenu("menu-main") || NavProto.createNewMenu();
+    }
+  }
+  if (params.get("journey")) state.journey = params.get("journey");
+  if (figmaScenario) state.journey = state.journey || "figma";
+
+  var menuNameEl = document.getElementById("menuName");
+  var statusSwitch = document.getElementById("statusSwitch");
+  var statusLabel = document.getElementById("statusLabel");
+  var treeList = document.getElementById("treeList");
+  var inspector = document.getElementById("inspector");
+  var dirtyPill = document.getElementById("dirtyPill");
+  var btnSave = document.getElementById("btnSave");
+  var sideMenuName = document.getElementById("sideMenuName");
+
+  menuNameEl.value = state.menuName || "Untitled menu";
+  setActive(!!state.active);
+  updateChrome();
+
+  function setActive(on) {
+    state.active = on;
+    statusSwitch.classList.toggle("on", on);
+    statusSwitch.setAttribute("aria-pressed", on ? "true" : "false");
+    statusLabel.textContent = on ? "Active" : "Inactive";
+  }
+
+  function updateChrome() {
+    var name = (menuNameEl.value || state.menuName || "Menu").trim() || "Menu";
+    sideMenuName.textContent = name;
+    document.title = name + " · Menu editor";
+    if (state.dirty) {
+      dirtyPill.hidden = false;
+      btnSave.textContent = "Save";
+      btnSave.classList.add("primary");
+    } else {
+      dirtyPill.hidden = true;
+      btnSave.textContent = "Saved";
+    }
+  }
+
+  /** Draft only — does NOT update the Navigations list until Save */
+  function persist() {
+    state.menuName = menuNameEl.value;
+    state.dirty = true;
+    NavProto.saveDraft(state);
+    updateChrome();
+  }
+
+  function sortedItems() {
+    // Keep insertion order but group visually by walking tree
+    var byParent = {};
+    state.items.forEach(function (it) {
+      var p = it.parentId || "root";
+      if (!byParent[p]) byParent[p] = [];
+      byParent[p].push(it);
+    });
+    var out = [];
+    function walk(pid, depth) {
+      (byParent[pid] || []).forEach(function (it) {
+        it.depth = depth;
+        out.push(it);
+        walk(it.id, depth + 1);
+      });
+    }
+    walk("root", 1);
+    // orphans
+    state.items.forEach(function (it) {
+      if (out.indexOf(it) === -1) out.push(it);
+    });
+    return out;
+  }
+
+  function statusPill(item) {
+    if (item.status === "empty") return '<span class="pill warn">Empty</span>';
+    if (item.status === "broken") return '<span class="pill err">Broken link</span>';
+    if (item.status === "unpublished") return '<span class="pill warn">Unpublished</span>';
+    return '<span class="pill info">L' + (item.depth || 1) + '</span>';
+  }
+
+  /* —— Drag & drop (reorder + nest) —— */
+  var dragId = null;
+  var dropTargetId = null;
+  var dropPos = null; // before | after | inside
+
+  function itemById(id) {
+    return state.items.find(function (i) {
+      return i.id === id;
+    });
+  }
+
+  function descendantIds(rootId) {
+    var ids = {};
+    var queue = [rootId];
+    while (queue.length) {
+      var cur = queue.shift();
+      ids[cur] = true;
+      state.items.forEach(function (it) {
+        if (it.parentId === cur && !ids[it.id]) queue.push(it.id);
+      });
+    }
+    return ids;
+  }
+
+  function collectSubtree(rootId) {
+    var out = [];
+    function walk(id) {
+      var node = itemById(id);
+      if (!node) return;
+      out.push(node);
+      state.items.forEach(function (it) {
+        if (it.parentId === id) walk(it.id);
+      });
+    }
+    walk(rootId);
+    return out;
+  }
+
+  function subtreeDepth(rootId) {
+    var max = 1;
+    function walk(id, d) {
+      max = Math.max(max, d);
+      state.items.forEach(function (it) {
+        if (it.parentId === id) walk(it.id, d + 1);
+      });
+    }
+    walk(rootId, 1);
+    return max;
+  }
+
+  function clearDropClasses() {
+    treeList.querySelectorAll(".tree-row").forEach(function (r) {
+      r.classList.remove("drop-before", "drop-after", "drop-inside", "dragging");
+    });
+  }
+
+  function resolveDropZone(row, clientY) {
+    var rect = row.getBoundingClientRect();
+    var y = clientY - rect.top;
+    var h = rect.height;
+    if (y < h * 0.28) return "before";
+    if (y > h * 0.72) return "after";
+    return "inside";
+  }
+
+  function canDrop(sourceId, targetId, pos) {
+    if (!sourceId || !targetId || sourceId === targetId) return false;
+    var blocked = descendantIds(sourceId);
+    if (blocked[targetId]) return false;
+    var source = itemById(sourceId);
+    var target = itemById(targetId);
+    if (!source || !target) return false;
+
+    var subDepth = subtreeDepth(sourceId);
+    if (pos === "inside") {
+      var parentDepth = target.depth || 1;
+      if (parentDepth + subDepth > 3) return false;
+      return true;
+    }
+    var siblingParentDepth = target.parentId ? (itemById(target.parentId) || {}).depth || 1 : 0;
+    var newDepth = siblingParentDepth + 1;
+    if (newDepth + subDepth - 1 > 3) return false;
+    return true;
+  }
+
+  function applyDepthsFromParents() {
+    var byId = {};
+    state.items.forEach(function (it) {
+      byId[it.id] = it;
+    });
+    function depthOf(it) {
+      if (!it.parentId) return 1;
+      var p = byId[it.parentId];
+      if (!p) return 1;
+      return Math.min(3, depthOf(p) + 1);
+    }
+    state.items.forEach(function (it) {
+      it.depth = depthOf(it);
+    });
+  }
+
+  /** Move dragged item (+ subtree) relative to target. pos: before|after|inside */
+  function moveItem(sourceId, targetId, pos) {
+    if (!canDrop(sourceId, targetId, pos)) {
+      NavProto.toast("<strong>Can't drop here</strong>Max nesting is 3 levels, or target is inside this item");
+      return false;
+    }
+    var blocked = descendantIds(sourceId);
+    var moving = collectSubtree(sourceId);
+    var rest = [];
+    state.items.forEach(function (it) {
+      if (!blocked[it.id]) rest.push(it);
+    });
+    var source = moving[0];
+    var target = rest.find(function (i) {
+      return i.id === targetId;
+    }) || itemById(targetId);
+    if (!source || !target) return false;
+
+    if (pos === "inside") {
+      source.parentId = target.id;
+    } else {
+      source.parentId = target.parentId || null;
+    }
+
+    // Rebuild sibling order: insert moving block among rest at the right spot
+    var newItems = [];
+    var inserted = false;
+    function insertMoving() {
+      if (inserted) return;
+      moving.forEach(function (m) {
+        newItems.push(m);
+      });
+      inserted = true;
+    }
+
+    if (pos === "inside") {
+      // After target, before any former children that stay after? Put as first child of target.
+      rest.forEach(function (it) {
+        newItems.push(it);
+        if (it.id === targetId) insertMoving();
+      });
+      if (!inserted) insertMoving();
+    } else if (pos === "before") {
+      rest.forEach(function (it) {
+        if (it.id === targetId) insertMoving();
+        newItems.push(it);
+      });
+      if (!inserted) insertMoving();
+    } else {
+      // after — place after target's entire remaining subtree in rest
+      var targetBlock = descendantIds(targetId);
+      rest.forEach(function (it) {
+        newItems.push(it);
+        if (it.id === targetId) {
+          // wait until end of target's descendants that are still in rest
+        }
+      });
+      // Re-do: walk rest, after last node of target's block, insert
+      newItems = [];
+      inserted = false;
+      var pastTarget = false;
+      rest.forEach(function (it) {
+        if (it.id === targetId) pastTarget = true;
+        if (pastTarget && !targetBlock[it.id] && !inserted) insertMoving();
+        newItems.push(it);
+      });
+      if (!inserted) insertMoving();
+    }
+
+    state.items = newItems;
+    applyDepthsFromParents();
+    state.selectedId = sourceId;
+    persist();
+    return true;
+  }
+
+  function bindTreeDnD() {
+    treeList.querySelectorAll(".tree-row").forEach(function (row) {
+      var handle = row.querySelector(".handle");
+      if (!handle) return;
+
+      handle.addEventListener("mousedown", function () {
+        row.setAttribute("draggable", "true");
+      });
+      row.addEventListener("dragstart", function (e) {
+        if (!row.getAttribute("draggable")) {
+          e.preventDefault();
+          return;
+        }
+        dragId = row.getAttribute("data-id");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", dragId);
+        row.classList.add("dragging");
+        requestAnimationFrame(function () {
+          row.classList.add("dragging");
+        });
+      });
+      row.addEventListener("dragend", function () {
+        dragId = null;
+        dropTargetId = null;
+        dropPos = null;
+        row.removeAttribute("draggable");
+        clearDropClasses();
+      });
+
+      row.addEventListener("dragover", function (e) {
+        if (!dragId) return;
+        var tid = row.getAttribute("data-id");
+        var pos = resolveDropZone(row, e.clientY);
+        if (!canDrop(dragId, tid, pos)) {
+          if (pos === "inside") {
+            var mid = row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2;
+            pos = e.clientY < mid ? "before" : "after";
+          }
+          if (!canDrop(dragId, tid, pos)) {
+            e.dataTransfer.dropEffect = "none";
+            clearDropClasses();
+            var draggingBad = treeList.querySelector('.tree-row[data-id="' + dragId + '"]');
+            if (draggingBad) draggingBad.classList.add("dragging");
+            return;
+          }
+        }
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        dropTargetId = tid;
+        dropPos = pos;
+        clearDropClasses();
+        var dragging = treeList.querySelector('.tree-row[data-id="' + dragId + '"]');
+        if (dragging) dragging.classList.add("dragging");
+        row.classList.add("drop-" + pos);
+      });
+
+      row.addEventListener("dragleave", function (e) {
+        if (!row.contains(e.relatedTarget)) {
+          row.classList.remove("drop-before", "drop-after", "drop-inside");
+        }
+      });
+
+      row.addEventListener("drop", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var tid = row.getAttribute("data-id");
+        var pos = dropPos || resolveDropZone(row, e.clientY);
+        var sid = dragId || e.dataTransfer.getData("text/plain");
+        clearDropClasses();
+        if (moveItem(sid, tid, pos)) {
+          var label = (itemById(sid) || {}).label || "Item";
+          var msg =
+            pos === "inside"
+              ? "<strong>Nested</strong>" + escapeHtml(label) + " under " + escapeHtml((itemById(tid) || {}).label || "parent")
+              : "<strong>Moved</strong>" + escapeHtml(label);
+          NavProto.toast(msg);
+          renderTree();
+        } else {
+          renderTree();
+        }
+        dragId = null;
+        dropTargetId = null;
+        dropPos = null;
+      });
+    });
+  }
+
+  function renderTree() {
+    var items = sortedItems();
+    if (!items.length) {
+      treeList.innerHTML =
+        '<div class="tree-empty">' +
+        "<h3>Build your storefront menu</h3>" +
+        "<p>Add collections in bulk, or add a single item. Nested children can be pulled from your catalog.</p>" +
+        '<div class="actions">' +
+        '<button type="button" class="btn primary" id="emptyBulk">Add collections <span class="click-hint">Click</span></button>' +
+        '<button type="button" class="btn" id="emptyItem">Add item</button>' +
+        "</div></div>";
+      var eb = document.getElementById("emptyBulk");
+      var ei = document.getElementById("emptyItem");
+      if (eb) eb.onclick = openDrawer;
+      if (ei) ei.onclick = addManualItem;
+      renderInspector();
+      return;
+    }
+
+    treeList.innerHTML = items
+      .map(function (it) {
+        var depthClass = "depth-l" + Math.min(it.depth || 1, 3);
+        var sel = it.id === state.selectedId ? " selected" : "";
+        var type = (it.resourceType || "link").charAt(0).toUpperCase() + (it.resourceType || "link").slice(1);
+        var thumb =
+          it.imageMode === "none"
+            ? '<div class="thumb" style="background:#f1f5f9"></div>'
+            : '<div class="thumb" style="background:linear-gradient(135deg,#9ec5e8,#cbdae8)"></div>';
+        return (
+          '<div class="tree-row ' +
+          depthClass +
+          sel +
+          '" data-id="' +
+          it.id +
+          '">' +
+          '<span class="handle" title="Drag to reorder or nest" aria-label="Drag"><i class="mdi mdi-drag" aria-hidden="true"></i></span>' +
+          '<div class="main-cell">' +
+          thumb +
+          "<div>" +
+          '<div class="label">' +
+          escapeHtml(it.label) +
+          "</div>" +
+          '<div class="meta">' +
+          type +
+          (it.link ? " · " + escapeHtml(it.link) : "") +
+          "</div>" +
+          "</div></div>" +
+          '<div class="right">' +
+          statusPill(it) +
+          '<button type="button" class="row-menu" data-menu="' +
+          it.id +
+          '" aria-label="Item actions"><i class="mdi mdi-dots-vertical" aria-hidden="true"></i></button>' +
+          "</div></div>"
+        );
+      })
+      .join("");
+
+    treeList.querySelectorAll(".tree-row").forEach(function (row) {
+      row.addEventListener("click", function (e) {
+        if (e.target.closest(".row-menu") || e.target.closest(".handle")) return;
+        state.selectedId = row.getAttribute("data-id");
+        persist();
+        renderTree();
+      });
+    });
+    treeList.querySelectorAll(".row-menu").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        openCtx(btn.getAttribute("data-menu"), e);
+      });
+    });
+    bindTreeDnD();
+    renderInspector();
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function selectedItem() {
+    return state.items.find(function (i) {
+      return i.id === state.selectedId;
+    });
+  }
+
+  function resourceTypeLabel(type) {
+    if (type === "collection") return "Collection";
+    if (type === "category") return "Category";
+    if (type === "page") return "Page";
+    return "Custom URL";
+  }
+
+  function applyCatalogResource(item, cat) {
+    var prevName = item.resourceId
+      ? ((NavProto.catalogById(item.resourceId) || {}).name || "")
+      : "";
+    var wasDefault =
+      !item.label ||
+      item.label === "New page" ||
+      item.label === "Untitled" ||
+      item.label === "home" ||
+      item.label === "Home" ||
+      (prevName && item.label === prevName);
+
+    item.resourceType = cat.type;
+    item.resourceId = cat.id;
+    item.link = NavProto.resourcePath(cat);
+    if (wasDefault) item.label = cat.name;
+    if (cat.type === "collection" && (!item.imageMode || item.imageMode === "none")) {
+      item.imageMode = "collection";
+    }
+    if (cat.type !== "collection" && item.imageMode === "collection") {
+      item.imageMode = "none";
+    }
+    item.status = cat.id === "ranges" ? "empty" : "ok";
+  }
+
+  function applyCustomResource(item) {
+    item.resourceType = "custom";
+    item.resourceId = null;
+    if (item.imageMode === "collection") item.imageMode = "none";
+  }
+
+  function catalogOptionsHtml(type, selectedId) {
+    return NavProto.CATALOG.filter(function (c) {
+      return c.type === type;
+    })
+      .map(function (c) {
+        var parentName = c.parent ? ((NavProto.catalogById(c.parent) || {}).name || "") : "";
+        var label = c.name + (parentName ? " (" + parentName + ")" : "");
+        return (
+          '<option value="' +
+          escapeHtml(c.id) +
+          '"' +
+          (selectedId === c.id ? " selected" : "") +
+          ">" +
+          escapeHtml(label) +
+          "</option>"
+        );
+      })
+      .join("");
+  }
+
+  function resourcePanelHtml(item) {
+    var type = item.resourceType || "custom";
+    if (type !== "collection" && type !== "category" && type !== "page" && type !== "custom") {
+      type = "custom";
+    }
+
+    var html =
+      '<div class="field">' +
+      '<select id="fResType">' +
+      '<option value="collection"' +
+      (type === "collection" ? " selected" : "") +
+      ">Collection</option>" +
+      '<option value="category"' +
+      (type === "category" ? " selected" : "") +
+      ">Category</option>" +
+      '<option value="page"' +
+      (type === "page" ? " selected" : "") +
+      ">Page</option>" +
+      '<option value="custom"' +
+      (type === "custom" ? " selected" : "") +
+      ">Custom URL</option>" +
+      "</select>" +
+      '<label for="fResType">Resource type</label></div>';
+
+    if (type === "custom") {
+      html += '<p class="field-hint">Custom URL — enter any path in Link to above.</p>';
+    } else {
+      html +=
+        '<div class="field">' +
+        '<select id="fResId">' +
+        '<option value="">Select ' +
+        escapeHtml(resourceTypeLabel(type).toLowerCase()) +
+        "…</option>" +
+        catalogOptionsHtml(type, item.resourceId) +
+        "</select>" +
+        '<label for="fResId">Resource</label></div>' +
+        '<p class="field-hint">Selecting a resource fills Link to automatically.</p>';
+    }
+    return html;
+  }
+
+  function imagePanelHtml(item) {
+    var mode = item.imageMode || "none";
+    var hasCollection = item.resourceType === "collection" && item.resourceId;
+    var collectionName = hasCollection
+      ? (NavProto.catalogById(item.resourceId) || {}).name || item.label
+      : item.label;
+
+    if (mode === "collection") {
+      if (!hasCollection) {
+        return (
+          '<div class="img-panel">' +
+          '<div class="img-empty">' +
+          '<i class="mdi mdi-image-off-outline" aria-hidden="true"></i>' +
+          "<div><strong>No collection linked</strong>" +
+          "<p>Link this item to a collection first, or choose Custom / None.</p></div>" +
+          "</div></div>"
+        );
+      }
+      return (
+        '<div class="img-panel">' +
+        '<div class="img-preview collection">' +
+        '<div class="img-thumb" aria-hidden="true"></div>' +
+        "<div class=\"img-meta\">" +
+        "<strong>Using collection image</strong>" +
+        "<p>Pulled from <b>" +
+        escapeHtml(collectionName) +
+        "</b>. Shown in the mega menu feature tile.</p>" +
+        '<p class="img-flow">Flow: Catalog collection image → menu item → storefront mega menu</p>' +
+        "</div></div>" +
+        '<button type="button" class="btn ghost img-action" id="imgOpenCollection" style="width:100%">View collection image source</button>' +
+        "</div>"
+      );
+    }
+
+    if (mode === "custom") {
+      var hasFile = !!item.customImageName;
+      if (hasFile) {
+        return (
+          '<div class="img-panel">' +
+          '<div class="img-preview custom">' +
+          '<div class="img-thumb custom-thumb" aria-hidden="true"></div>' +
+          "<div class=\"img-meta\">" +
+          "<strong>Custom image</strong>" +
+          "<p>" +
+          escapeHtml(item.customImageName) +
+          "</p>" +
+          '<p class="img-flow">Flow: Upload → menu item → storefront mega menu</p>' +
+          "</div></div>" +
+          '<div class="img-actions">' +
+          '<button type="button" class="btn" id="imgReplace" style="flex:1">Replace</button>' +
+          '<button type="button" class="btn ghost" id="imgClearCustom" style="flex:1">Remove</button>' +
+          "</div></div>"
+        );
+      }
+      return (
+        '<div class="img-panel">' +
+        '<label class="img-drop" id="imgDropZone">' +
+        '<i class="mdi mdi-cloud-upload-outline" aria-hidden="true"></i>' +
+        "<strong>Upload image</strong>" +
+        "<p>PNG or JPG · recommended 800×600 for mega menu</p>" +
+        '<span class="btn" style="pointer-events:none;margin-top:8px">Choose file</span>' +
+        '<input type="file" id="imgFile" accept="image/png,image/jpeg,image/webp" hidden />' +
+        "</label>" +
+        '<p class="img-flow">Flow: Choose file → save menu → storefront uses this image instead of collection art</p>' +
+        "</div>"
+      );
+    }
+
+    return (
+      '<div class="img-panel">' +
+      '<div class="img-empty">' +
+      '<i class="mdi mdi-image-off-outline" aria-hidden="true"></i>' +
+      "<div><strong>No image on this item</strong>" +
+      "<p>Mega menu shows text only for this link (no feature tile image).</p></div>" +
+      "</div>" +
+      '<p class="img-flow">Flow: None → label + link only on storefront</p>' +
+      "</div>"
+    );
+  }
+
+  function renderInspector() {
+    var item = selectedItem();
+    if (!item) {
+      inspector.innerHTML =
+        '<h3>Item details</h3><p class="hint">Select a menu item to edit label, link, and image.</p>' +
+        '<div class="inspector-empty">Nothing selected</div>';
+      return;
+    }
+    if (!item.imageMode) item.imageMode = item.resourceType === "collection" ? "collection" : "none";
+    if (!item.resourceType) item.resourceType = item.resourceId ? "collection" : "custom";
+
+    var linkLocked = !!item.resourceId;
+    var canAddChildren =
+      item.resourceId && (NavProto.CHILD_MAP[item.resourceId] || []).length > 0;
+
+    inspector.innerHTML =
+      "<h3>Item details</h3>" +
+      '<p class="hint">Feeds storefront mega menu configuration</p>' +
+      '<div class="field"><input id="fLabel" value="' +
+      escapeHtml(item.label) +
+      '" /><label for="fLabel">Menu page name</label></div>' +
+      '<div class="field"><input id="fLink" value="' +
+      escapeHtml(item.link || "") +
+      '"' +
+      (linkLocked ? " readonly" : "") +
+      ' /><label for="fLink">Link to</label></div>' +
+      (linkLocked
+        ? '<p class="field-hint">Link comes from the linked resource. Switch Resource type to Custom URL to edit freely.</p>'
+        : "") +
+      resourcePanelHtml(item) +
+      '<div class="field"><label style="position:static;padding:0;background:transparent;display:block;margin-bottom:8px">Image source</label><div class="seg" id="imgSeg">' +
+      '<button type="button" data-img="collection"' +
+      (item.imageMode === "collection" ? ' class="on"' : "") +
+      ">Collection</button>" +
+      '<button type="button" data-img="custom"' +
+      (item.imageMode === "custom" ? ' class="on"' : "") +
+      ">Custom</button>" +
+      '<button type="button" data-img="none"' +
+      (item.imageMode === "none" ? ' class="on"' : "") +
+      ">None</button>" +
+      "</div></div>" +
+      imagePanelHtml(item) +
+      (canAddChildren
+        ? '<button type="button" class="btn" id="inspChildren" style="width:100%;margin:12px 0 10px">Add child collections</button>'
+        : '<div style="height:12px"></div>') +
+      '<button type="button" class="btn" id="inspDelete" style="width:100%">Remove from menu</button>';
+
+    document.getElementById("fLabel").addEventListener("change", function () {
+      item.label = this.value;
+      persist();
+      renderTree();
+    });
+    document.getElementById("fLink").addEventListener("change", function () {
+      if (item.resourceId) return;
+      item.link = this.value;
+      persist();
+      renderTree();
+    });
+
+    document.getElementById("fResType").addEventListener("change", function () {
+      var next = this.value;
+      if (next === "custom") {
+        applyCustomResource(item);
+        persist();
+        renderTree();
+        return;
+      }
+      item.resourceType = next;
+      // Keep selection if same type; otherwise clear until user picks
+      if (item.resourceId) {
+        var cur = NavProto.catalogById(item.resourceId);
+        if (!cur || cur.type !== next) {
+          item.resourceId = null;
+          if (item.imageMode === "collection") item.imageMode = "none";
+        }
+      }
+      persist();
+      renderInspector();
+    });
+
+    var fResId = document.getElementById("fResId");
+    if (fResId) {
+      fResId.addEventListener("change", function () {
+        var id = this.value;
+        if (!id) {
+          item.resourceId = null;
+          persist();
+          renderTree();
+          return;
+        }
+        var cat = NavProto.catalogById(id);
+        if (!cat) return;
+        applyCatalogResource(item, cat);
+        persist();
+        renderTree();
+        NavProto.toast(
+          "<strong>Resource linked</strong>" +
+            escapeHtml(resourceTypeLabel(cat.type)) +
+            " · " +
+            escapeHtml(cat.name)
+        );
+      });
+    }
+
+    document.querySelectorAll("#imgSeg button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        item.imageMode = b.getAttribute("data-img");
+        if (item.imageMode !== "custom") item.customImageName = null;
+        persist();
+        renderTree();
+      });
+    });
+
+    var drop = document.getElementById("imgDropZone");
+    var fileInput = document.getElementById("imgFile");
+    if (drop && fileInput) {
+      drop.addEventListener("click", function () {
+        fileInput.click();
+      });
+      fileInput.addEventListener("change", function () {
+        var f = fileInput.files && fileInput.files[0];
+        if (!f) return;
+        item.customImageName = f.name;
+        item.imageMode = "custom";
+        persist();
+        renderTree();
+        NavProto.toast("<strong>Image selected</strong>" + escapeHtml(f.name));
+      });
+    }
+    var replace = document.getElementById("imgReplace");
+    if (replace) {
+      replace.addEventListener("click", function () {
+        item.customImageName = null;
+        persist();
+        renderInspector();
+        setTimeout(function () {
+          var fi = document.getElementById("imgFile");
+          if (fi) fi.click();
+        }, 50);
+      });
+    }
+    var clearCustom = document.getElementById("imgClearCustom");
+    if (clearCustom) {
+      clearCustom.addEventListener("click", function () {
+        item.customImageName = null;
+        persist();
+        renderTree();
+      });
+    }
+    var openCol = document.getElementById("imgOpenCollection");
+    if (openCol) {
+      openCol.addEventListener("click", function () {
+        NavProto.toast(
+          "<strong>Collection image</strong>Would open catalog → " +
+            escapeHtml(item.label) +
+            " → Media (prototype)"
+        );
+      });
+    }
+
+    var ch = document.getElementById("inspChildren");
+    if (ch) {
+      ch.addEventListener("click", function () {
+        state = NavProto.addChildrenForItem(state, item.id);
+        persist();
+        renderTree();
+      });
+    }
+    document.getElementById("inspDelete").addEventListener("click", function () {
+      removeItem(item.id);
+    });
+  }
+
+  function removeItem(id) {
+    var removeIds = {};
+    function mark(pid) {
+      removeIds[pid] = true;
+      state.items.forEach(function (i) {
+        if (i.parentId === pid) mark(i.id);
+      });
+    }
+    mark(id);
+    state.items = state.items.filter(function (i) {
+      return !removeIds[i.id];
+    });
+    if (removeIds[state.selectedId]) state.selectedId = state.items[0] ? state.items[0].id : null;
+    persist();
+    renderTree();
+    NavProto.toast("Item removed");
+  }
+
+  function addManualItem() {
+    var id = NavProto.uid("mi");
+    state.items.push({
+      id: id,
+      label: "New page",
+      resourceId: null,
+      resourceType: "custom",
+      depth: 1,
+      parentId: null,
+      imageMode: "none",
+      status: "ok",
+      link: "/"
+    });
+    state.selectedId = id;
+    persist();
+    renderTree();
+    NavProto.toast("<strong>Item added</strong>Pick a resource from the dropdowns");
+  }
+
+  /* Drawer */
+  function openDrawer() {
+    selectedPick = {};
+    document.getElementById("includeChildren").classList.remove("on");
+    document.getElementById("includeChildren").setAttribute("aria-pressed", "false");
+    document.getElementById("overlay").classList.add("open");
+    document.getElementById("drawer").classList.add("open");
+    document.getElementById("drawer").setAttribute("aria-hidden", "false");
+    renderPickList();
+  }
+  function closeDrawer() {
+    document.getElementById("overlay").classList.remove("open");
+    document.getElementById("drawer").classList.remove("open");
+    document.getElementById("drawer").setAttribute("aria-hidden", "true");
+  }
+
+  function filteredPickCatalog() {
+    var q = (document.getElementById("pickSearch").value || "").toLowerCase();
+    return NavProto.CATALOG.filter(function (c) {
+      if (c.type !== pickTab) return false;
+      if (q && c.name.toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+  }
+
+  function renderPickList() {
+    var inMenu = {};
+    state.items.forEach(function (i) {
+      if (i.resourceId) inMenu[i.resourceId] = true;
+    });
+    var list = filteredPickCatalog();
+    document.getElementById("pickVisibleMeta").textContent =
+      list.length + " visible" + (list.length === 1 ? "" : "s");
+    document.getElementById("pickSelectAllLabel").textContent =
+      "Select all visible";
+
+    document.getElementById("pickList").innerHTML = list
+      .map(function (c) {
+        var checked = !!selectedPick[c.id];
+        var nest = NavProto.nestPreview(c.id);
+        var parentName = c.parent ? (NavProto.catalogById(c.parent) || {}).name || c.parent : null;
+        var levelLabel = "Level " + nest.level;
+        var placeLabel = parentName ? "Under " + parentName : "Top of catalog";
+        var nestLabel;
+        var badge;
+        var subLine;
+
+        if (c.type === "page") {
+          subLine = "Page · /pages/" + escapeHtml(c.id);
+          badge = inMenu[c.id]
+            ? '<span class="badge in">In menu</span>'
+            : '<span class="badge">Page</span>';
+        } else {
+          if (nest.below > 0) {
+            nestLabel =
+              "Nests " +
+              nest.below +
+              " level" +
+              (nest.below === 1 ? "" : "s") +
+              " below";
+            if (nest.truncated) nestLabel += " (menu caps at 3)";
+          } else {
+            nestLabel = "No children to nest";
+          }
+          subLine = escapeHtml(levelLabel + " · " + placeLabel + " · " + nestLabel);
+          badge = inMenu[c.id]
+            ? '<span class="badge in">In menu</span>'
+            : nest.below > 0
+              ? '<span class="badge depth">' +
+                levelLabel +
+                " · nests " +
+                nest.below +
+                "</span>"
+              : '<span class="badge">' + levelLabel + " · no children</span>";
+        }
+        return (
+          '<label class="pick-item' +
+          (checked ? " checked" : "") +
+          '">' +
+          '<input type="checkbox" data-id="' +
+          c.id +
+          '"' +
+          (checked ? " checked" : "") +
+          " />" +
+          "<div><div class=\"name\">" +
+          escapeHtml(c.name) +
+          '</div><div class="sub">' +
+          subLine +
+          "</div></div>" +
+          badge +
+          "</label>"
+        );
+      })
+      .join("") || '<p style="color:var(--ink-3);font-size:13px;padding:12px">No matches</p>';
+
+    document.querySelectorAll("#pickList input").forEach(function (inp) {
+      inp.addEventListener("change", function () {
+        if (inp.checked) selectedPick[inp.getAttribute("data-id")] = true;
+        else delete selectedPick[inp.getAttribute("data-id")];
+        var row = inp.closest(".pick-item");
+        if (row) row.classList.toggle("checked", inp.checked);
+        updatePickCount();
+        syncMasterCheckbox();
+      });
+    });
+    updatePickCount();
+    syncMasterCheckbox();
+  }
+
+  function syncMasterCheckbox() {
+    var list = filteredPickCatalog();
+    var master = document.getElementById("pickSelectAll");
+    if (!master) return;
+    var selectedVisible = list.filter(function (c) {
+      return selectedPick[c.id];
+    }).length;
+    master.checked = list.length > 0 && selectedVisible === list.length;
+    master.indeterminate = selectedVisible > 0 && selectedVisible < list.length;
+  }
+
+  function updatePickCount() {
+    var n = Object.keys(selectedPick).length;
+    var list = filteredPickCatalog();
+    var bulkBar = document.getElementById("drawerBulkBar");
+    var footIdle = document.getElementById("drawerFootIdle");
+    var countEl = document.getElementById("pickCount");
+    var selectAllBtn = document.getElementById("pickSelectAllFiltered");
+
+    if (countEl) countEl.textContent = String(n);
+    if (selectAllBtn) {
+      selectAllBtn.textContent = "Select all (" + list.length + ")";
+      selectAllBtn.hidden = list.length === 0 || n >= list.length;
+    }
+
+    var hasSelection = n > 0;
+    if (bulkBar) bulkBar.hidden = !hasSelection;
+    if (footIdle) footIdle.hidden = hasSelection;
+
+    var addBtn = document.getElementById("drawerAdd");
+    var addBulk = document.getElementById("drawerAddBulk");
+    if (addBtn) addBtn.disabled = n === 0;
+    if (addBulk) addBulk.disabled = n === 0;
+  }
+
+  function selectAllVisible() {
+    filteredPickCatalog().forEach(function (c) {
+      selectedPick[c.id] = true;
+    });
+    renderPickList();
+  }
+
+  function clearPickSelection() {
+    selectedPick = {};
+    renderPickList();
+  }
+
+  function commitBulk() {
+    var ids = Object.keys(selectedPick);
+    var include = document.getElementById("includeChildren").classList.contains("on");
+    var built = NavProto.buildFromSelection(ids, include);
+    // append; skip exact resource duplicates at same depth root for simplicity
+    var existing = {};
+    state.items.forEach(function (i) {
+      existing[i.resourceId] = true;
+    });
+    var added = 0;
+    built.forEach(function (it) {
+      if (existing[it.resourceId]) return;
+      state.items.push(it);
+      existing[it.resourceId] = true;
+      added++;
+    });
+    if (added && !state.selectedId) state.selectedId = state.items[0].id;
+    else if (added) state.selectedId = state.items[state.items.length - added].id;
+    persist();
+    closeDrawer();
+    renderTree();
+    NavProto.toast(
+      "<strong>" +
+        added +
+        " item(s) added</strong>" +
+        (include ? " · children nested where available" : "")
+    );
+  }
+
+  /* Context menu */
+  function openCtx(id, e) {
+    ctxItemId = id;
+    var menu = document.getElementById("ctxMenu");
+    menu.classList.add("open");
+    var x = Math.min(e.clientX, window.innerWidth - 220);
+    var y = Math.min(e.clientY, window.innerHeight - 180);
+    menu.style.left = x + "px";
+    menu.style.top = y + "px";
+  }
+  function closeCtx() {
+    document.getElementById("ctxMenu").classList.remove("open");
+    ctxItemId = null;
+  }
+
+  document.getElementById("ctxMenu").addEventListener("click", function (e) {
+    var btn = e.target.closest("button");
+    if (!btn || !ctxItemId) return;
+    var act = btn.getAttribute("data-act");
+    var item = state.items.find(function (i) {
+      return i.id === ctxItemId;
+    });
+    if (act === "children" && item) {
+      state = NavProto.addChildrenForItem(state, item.id);
+      persist();
+      renderTree();
+    }
+    if (act === "delete" && item) removeItem(item.id);
+    if (act === "indent" && item) {
+      var flat = sortedItems();
+      var idx = flat.findIndex(function (i) {
+        return i.id === item.id;
+      });
+      var prevSibling = null;
+      for (var i = idx - 1; i >= 0; i--) {
+        if ((flat[i].depth || 1) < (item.depth || 1)) break;
+        if (
+          (flat[i].depth || 1) === (item.depth || 1) &&
+          (flat[i].parentId || null) === (item.parentId || null)
+        ) {
+          prevSibling = flat[i];
+          break;
+        }
+      }
+      if (prevSibling && moveItem(item.id, prevSibling.id, "inside")) {
+        NavProto.toast("<strong>Nested</strong>" + escapeHtml(item.label) + " under " + escapeHtml(prevSibling.label));
+        renderTree();
+      } else {
+        NavProto.toast("<strong>Can't indent</strong>Need a previous sibling, and max depth is 3");
+      }
+    }
+    if (act === "outdent" && item && item.parentId) {
+      var parent = itemById(item.parentId);
+      if (parent && moveItem(item.id, parent.id, "after")) {
+        NavProto.toast("<strong>Outdented</strong>" + escapeHtml(item.label));
+        renderTree();
+      } else {
+        item.parentId = null;
+        applyDepthsFromParents();
+        persist();
+        renderTree();
+      }
+    }
+    closeCtx();
+  });
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest("#ctxMenu") && !e.target.closest(".row-menu")) closeCtx();
+  });
+
+  /* Preview */
+  function openPreview() {
+    renderPreview();
+    document.getElementById("previewModal").classList.add("open");
+  }
+  function closePreview() {
+    document.getElementById("previewModal").classList.remove("open");
+  }
+
+  function renderPreview() {
+    var items = sortedItems();
+    var roots = items.filter(function (i) {
+      return !i.parentId;
+    });
+    var byParent = {};
+    items.forEach(function (i) {
+      if (!i.parentId) return;
+      if (!byParent[i.parentId]) byParent[i.parentId] = [];
+      byParent[i.parentId].push(i);
+    });
+
+    document.getElementById("sfNav").innerHTML = roots
+      .map(function (r) {
+        var kids = byParent[r.id] || [];
+        var mega =
+          kids.length || r.imageMode !== "none"
+            ? '<div class="mega">' +
+              '<div class="mega-col"><h4>' +
+              escapeHtml(r.label) +
+              "</h4>" +
+              kids
+                .map(function (k) {
+                  var gk = byParent[k.id] || [];
+                  return (
+                    "<div><a href=\"#\">" +
+                    escapeHtml(k.label) +
+                    "</a>" +
+                    gk
+                      .map(function (g) {
+                        return '<a href="#" style="padding-left:10px;color:var(--ink-3)">' + escapeHtml(g.label) + "</a>";
+                      })
+                      .join("") +
+                    "</div>"
+                  );
+                })
+                .join("") +
+              "</div>" +
+              (r.imageMode === "none"
+                ? ""
+                : '<div class="mega-feature"><div style="height:90px;background:linear-gradient(135deg,' +
+                  (r.imageMode === "custom" ? "#c4b5fd,#818cf8" : "#9ec5e8,#6ba3d4") +
+                  ')"></div><span>' +
+                  escapeHtml(r.label) +
+                  (r.imageMode === "custom"
+                    ? " · " + escapeHtml(r.customImageName || "custom image")
+                    : " · collection image") +
+                  "</span></div>") +
+              "</div>"
+            : "";
+        return '<div class="sf-nav-item">' + escapeHtml(r.label) + mega + "</div>";
+      })
+      .join("") || '<div class="sf-nav-item" style="color:var(--ink-3)">No items</div>';
+
+    var mobileHtml = "";
+    items.forEach(function (i) {
+      var cls = i.depth === 1 ? "m-item" : i.depth === 2 ? "m-item child" : "m-item gchild";
+      mobileHtml += '<div class="' + cls + '">' + escapeHtml(i.label) + "</div>";
+    });
+    document.getElementById("mobileMenu").innerHTML = mobileHtml || '<div class="m-item">No items</div>';
+  }
+
+  /* Wire UI */
+  statusSwitch.addEventListener("click", function () {
+    setActive(!state.active);
+    persist();
+  });
+  menuNameEl.addEventListener("input", function () {
+    state.menuName = menuNameEl.value;
+    state.dirty = true;
+    updateChrome();
+  });
+  menuNameEl.addEventListener("change", persist);
+  document.getElementById("btnAddCollections").addEventListener("click", openDrawer);
+  document.getElementById("btnAddItem").addEventListener("click", addManualItem);
+  document.getElementById("btnPreview").addEventListener("click", openPreview);
+  document.getElementById("btnSave").addEventListener("click", function () {
+    state.menuName = menuNameEl.value;
+    var saved = NavProto.commitMenu(state);
+    state.dirty = false;
+    state.isNew = false;
+    state.id = saved.id;
+    updateChrome();
+    NavProto.toast(
+      "<strong>Menu saved</strong>" +
+        escapeHtml(saved.name) +
+        (saved.active ? " · Active on storefront" : " · Inactive") +
+        " · Appears in Navigations list"
+    );
+    setTimeout(function () {
+      location.href = "01-navigations.html?saved=" + encodeURIComponent(saved.id);
+    }, 700);
+  });
+  document.getElementById("btnCancel").addEventListener("click", function () {
+    if (state.dirty) {
+      var leave = confirm("Discard unsaved changes and return to Navigations?");
+      if (!leave) return;
+    }
+    NavProto.clearDraft();
+    location.href = "01-navigations.html";
+  });
+  document.getElementById("btnBack").addEventListener("click", function (e) {
+    if (state.dirty) {
+      var leave = confirm("You have unsaved changes. Leave without saving?");
+      if (!leave) {
+        e.preventDefault();
+        return;
+      }
+      NavProto.clearDraft();
+    }
+  });
+  document.getElementById("drawerClose").addEventListener("click", closeDrawer);
+  document.getElementById("drawerCancel").addEventListener("click", closeDrawer);
+  document.getElementById("overlay").addEventListener("click", closeDrawer);
+  document.getElementById("drawerAdd").addEventListener("click", commitBulk);
+  document.getElementById("drawerAddBulk").addEventListener("click", commitBulk);
+  document.getElementById("pickSelectAllFiltered").addEventListener("click", selectAllVisible);
+  document.getElementById("pickClearSelection").addEventListener("click", clearPickSelection);
+  document.getElementById("pickSelectAll").addEventListener("change", function () {
+    if (this.checked) selectAllVisible();
+    else {
+      filteredPickCatalog().forEach(function (c) {
+        delete selectedPick[c.id];
+      });
+      renderPickList();
+    }
+  });
+  document.getElementById("pickSearch").addEventListener("input", renderPickList);
+  document.getElementById("includeChildren").addEventListener("click", function () {
+    var on = !this.classList.contains("on");
+    this.classList.toggle("on", on);
+    this.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  document.querySelectorAll(".tabs button").forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      document.querySelectorAll(".tabs button").forEach(function (t) {
+        t.classList.remove("on");
+      });
+      tab.classList.add("on");
+      pickTab = tab.getAttribute("data-tab");
+      renderPickList();
+    });
+  });
+  document.getElementById("previewClose").addEventListener("click", closePreview);
+  document.getElementById("previewModal").addEventListener("click", function (e) {
+    if (e.target === this) closePreview();
+  });
+  document.querySelectorAll(".device-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll(".device-toggle button").forEach(function (x) {
+        x.classList.remove("on");
+      });
+      b.classList.add("on");
+      var sf = document.getElementById("storefront");
+      sf.classList.toggle("desktop", b.getAttribute("data-device") === "desktop");
+      sf.classList.toggle("mobile", b.getAttribute("data-device") === "mobile");
+    });
+  });
+  document.getElementById("davinciHint").addEventListener("click", function () {
+    location.href = "04-davinci-menu-builder.html?journey=d&open=1";
+  });
+  document.getElementById("protoReset").addEventListener("click", function () {
+    if (!confirm("Reset all menus to the demo library and clear this draft?")) return;
+    NavProto.resetLibrary();
+    state = NavProto.createNewMenu({ menuName: "Untitled menu" });
+    menuNameEl.value = state.menuName;
+    setActive(true);
+    updateChrome();
+    renderTree();
+    NavProto.toast("<strong>Library reset</strong>Demo menus restored · start a new menu");
+  });
+
+  // Auto-open drawer for empty new menu / Figma bulk scenarios
+  renderTree();
+  var shouldOpenDrawer =
+    (figmaMeta && figmaMeta.openDrawer) ||
+    (!state.items.length &&
+      (params.get("journey") === "a" || params.get("new") === "1" || params.get("reset") === "1" || figmaScenario === "add-new"));
+  if (shouldOpenDrawer) {
+    setTimeout(openDrawer, 400);
+  } else if (figmaMeta && figmaMeta.focusId) {
+    state.selectedId = figmaMeta.focusId;
+    renderTree();
+  }
+})();
+</script>
+</body>
+</html>

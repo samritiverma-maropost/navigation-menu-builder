@@ -1,0 +1,321 @@
+/* Design exploration: menu structure table with picker-parity columns
+ * Separate from v2 (05). Do not replace Phase 1 or v2. */
+
+:root {
+  --depth-l1: #1e2533;
+  --depth-l2: #1565c0;
+  --depth-l3: #00897b;
+}
+
+.v3-page .v2-banner {
+  margin: 12px 20px 0;
+}
+
+.v3-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 20px 0;
+}
+@media (max-width: 1100px) {
+  .v3-compare { grid-template-columns: 1fr; }
+}
+
+.v3-card {
+  border: 1px solid var(--ls-divider-solid);
+  border-radius: var(--ls-radius-lg);
+  background: var(--ls-surface);
+  overflow: hidden;
+  box-shadow: var(--ls-elev-1);
+}
+.v3-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ls-divider-solid);
+  background: #fafbfc;
+}
+.v3-card-head h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+.v3-card-head .tag {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--ls-black-100);
+  color: var(--ls-on-medium);
+}
+.v3-card-head .tag.proposed {
+  background: #e3f2fd;
+  color: #0d47a1;
+}
+.v3-card-body { padding: 0; }
+.v3-note {
+  margin: 0;
+  padding: 10px 16px;
+  font-size: 12px;
+  color: var(--ls-on-medium);
+  border-bottom: 1px solid var(--ls-divider-solid);
+  line-height: 16px;
+}
+
+/* —— Proposed table (picker columns mirrored) —— */
+.v3-table-wrap { padding: 0 0 12px; }
+.v3-cols-head,
+.v3-row {
+  display: grid;
+  grid-template-columns: 52px minmax(140px, 1.4fr) 100px 72px 88px 52px 40px;
+  align-items: center;
+  column-gap: 8px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+.v3-cols-head {
+  min-height: 32px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: rgba(0, 0, 0, 0.54);
+  border-bottom: 1px solid var(--ls-divider-solid);
+  background: #fafbfc;
+}
+.v3-cols-head .c-kids,
+.v3-cols-head .c-include,
+.v3-cols-head .c-level,
+.v3-cols-head .c-type {
+  text-align: center;
+}
+
+.v3-row {
+  min-height: 56px;
+  border-bottom: 1px solid var(--ls-divider-solid);
+  background: #fff;
+  cursor: default;
+}
+.v3-row:hover { background: #f7f8fa; }
+.v3-row.is-selected { background: #eef3f7; }
+
+.v3-lead {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.v3-lead .handle {
+  color: #9aa3b2;
+  cursor: grab;
+  display: grid;
+  place-items: center;
+}
+.v3-lead .handle .mdi { font-size: 18px; }
+.v3-lead input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #2196f3;
+}
+
+.v3-item {
+  min-width: 0;
+  padding-left: calc(var(--nest, 0) * 20px);
+}
+.v3-item .name {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.v3-item .path {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.54);
+  line-height: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.v3-type {
+  display: flex;
+  justify-content: center;
+}
+.v3-type-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  background: var(--ls-black-100);
+  color: rgba(0, 0, 0, 0.66);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.v3-type-chip.collection { background: #e8eaf0; color: #1e2533; }
+.v3-type-chip.category { background: #e3f2fd; color: #0d47a1; }
+.v3-type-chip.page { background: #f3e5f5; color: #6a1b9a; }
+.v3-type-chip.custom { background: #fff3e0; color: #e65100; }
+
+.v3-kids,
+.v3-include,
+.v3-level {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.v3-kids-count {
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 11px;
+  background: var(--ls-black-100);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.66);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.v3-na {
+  color: rgba(0, 0, 0, 0.26);
+  font-size: 14px;
+}
+
+.v3-switch {
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(0, 0, 0, 0.28);
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  flex: none;
+}
+.v3-switch.on { background: #2196f3; }
+.v3-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.15s;
+}
+.v3-switch.on::after { left: 16px; }
+
+.v3-level-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 11px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #fff;
+}
+.v3-level-chip.l1 { background: var(--depth-l1); }
+.v3-level-chip.l2 { background: var(--depth-l2); }
+.v3-level-chip.l3 { background: var(--depth-l3); }
+
+.v3-menu {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.54);
+  display: grid;
+  place-items: center;
+  margin-left: auto;
+}
+.v3-menu .mdi { font-size: 20px; }
+
+.v3-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.54);
+  border-bottom: 1px solid var(--ls-divider-solid);
+}
+.v3-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+.v3-legend .l1 i { background: var(--depth-l1); }
+.v3-legend .l2 i { background: var(--depth-l2); }
+.v3-legend .l3 i { background: var(--depth-l3); }
+
+.v3-footer {
+  margin: 12px 20px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.v3-footer p {
+  margin: 0;
+  flex: 1;
+  font-size: 13px;
+  color: var(--ls-on-medium);
+  line-height: 18px;
+}
+
+/* Current (problem) reference — muted */
+.v3-old .v3-row-old {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ls-divider-solid);
+  min-height: 56px;
+}
+.v3-old .grow { flex: 1; min-width: 0; }
+.v3-old .name { font-size: 14px; font-weight: 500; }
+.v3-old .meta { font-size: 12px; color: rgba(0, 0, 0, 0.54); }
+.v3-old .right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.v3-old .confuse {
+  outline: 2px dashed #ed6c02;
+  outline-offset: 2px;
+  border-radius: 12px;
+  padding: 2px;
+}
+.v3-callout {
+  margin: 12px 16px;
+  padding: 10px 12px;
+  border-radius: var(--ls-radius);
+  background: #fff4e5;
+  border: 1px solid #ffd8a8;
+  color: #7a3e00;
+  font-size: 12px;
+  line-height: 16px;
+}
+.v3-callout strong { color: #5c2e00; }

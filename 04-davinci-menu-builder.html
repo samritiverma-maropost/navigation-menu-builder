@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Da Vinci Menu Builder · Phase 2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="_nav.css" />
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<div class="proto-bar">
+  <strong>Phase 2</strong> Da Vinci Menu Builder
+  <a class="proto-pill" href="index.html">Hub</a>
+  <a class="proto-pill" href="01-navigations.html">1 · List</a>
+  <a class="proto-pill" href="03-menu-editor.html">3 · Phase 1 editor</a>
+  <a class="proto-pill active" href="04-davinci-menu-builder.html">4 · Da Vinci</a>
+  <button type="button" class="proto-pill" id="protoReset">Reset</button>
+</div>
+
+<div class="shell" style="min-height:calc(100vh - 37px)">
+  <header class="appbar">
+    <div class="brandcell">MAROPOST</div>
+    <div class="acct">Account 2000293 <span class="chev">&#9662;</span></div>
+    <div class="abar-search"><input placeholder="Search" readonly /></div>
+    <div class="abar-right">
+      <button type="button" class="davinci" id="btnHeaderDaVinci">Da Vinci</button>
+    </div>
+  </header>
+  <div class="body">
+    <aside class="sidebar">
+      <div class="gs"><b>Sandstone Home</b><span>Store · Sales channel</span></div>
+      <div class="nav-sec">
+        <div class="nav-label">Storefront</div>
+        <a class="nav-sub" href="01-navigations.html">Navigations</a>
+        <a class="nav-sub active" href="04-davinci-menu-builder.html">Main menu</a>
+      </div>
+    </aside>
+    <main class="main editor-page">
+      <div class="editor-top">
+        <a class="back" href="01-navigations.html">&#8592; Navigations</a>
+        <input class="title-field" id="menuName" value="Main menu" aria-label="Menu name" />
+        <div class="status-toggle">
+          <button type="button" class="switch on" id="statusSwitch" aria-pressed="true"></button>
+          <span>Active</span>
+        </div>
+        <span class="dirty-pill" id="dirtyPill" hidden>Unsaved draft</span>
+        <button type="button" class="btn davinci-cta" id="btnGenerateTop">Generate with Da Vinci</button>
+        <button type="button" class="btn" id="btnPreview" disabled>Preview</button>
+        <button type="button" class="btn primary" id="btnSave" disabled>Save</button>
+      </div>
+
+      <div class="dv-banner" id="dvBanner" hidden>
+        <span class="dv-mark">Da Vinci</span>
+        <p>
+          <strong id="bannerTitle">Draft generated</strong>
+          <span id="bannerMeta"> · Review in the Phase 1 editor before publishing. Nothing goes live until you Save.</span>
+        </p>
+        <button type="button" class="btn" id="btnRegenerate">Regenerate</button>
+        <button type="button" class="btn ghost" id="btnDiscard">Discard draft</button>
+      </div>
+
+      <div class="dv-refine" id="dvRefine">
+        <div class="dv-refine-label">Refine with Da Vinci</div>
+        <div class="dv-chips" id="refineChips">
+          <button type="button" class="dv-chip" data-refine="simpler">Make simpler</button>
+          <button type="button" class="dv-chip" data-refine="sale">Add sale collections</button>
+          <button type="button" class="dv-chip" data-refine="brand">Group by brand</button>
+          <button type="button" class="dv-chip" data-refine="empty">Remove empty collections</button>
+        </div>
+        <div class="dv-refine-row">
+          <input id="refinePrompt" placeholder="Ask Da Vinci to refine this menu…" />
+          <button type="button" class="btn davinci-cta" id="btnRefineSend">Refine</button>
+        </div>
+      </div>
+
+      <div class="editor-body">
+        <section class="tree-pane">
+          <div class="tree-toolbar">
+            <h2>Menu structure</h2>
+            <div class="btn-group">
+              <button type="button" class="btn" id="btnAddItem" disabled>Add item</button>
+              <button type="button" class="btn" id="btnAddCollections" disabled>Add collections</button>
+            </div>
+          </div>
+          <p class="tree-dnd-hint">
+            AI draft uses the same tree as Phase 1 — rename, reorder, and nest manually after generation.
+          </p>
+          <div id="treeHost">
+            <div class="dv-empty" id="dvEmpty">
+              <span class="dv-mark">Da Vinci</span>
+              <h3>Generate a menu from your catalog</h3>
+              <p>
+                Da Vinci drafts labels, hierarchy, and links from collections and preferences.
+                You review everything in this editor — publish only when ready.
+              </p>
+              <div class="dv-empty-actions">
+                <button type="button" class="btn davinci-cta" id="btnGenerateEmpty">
+                  Generate with Da Vinci <span class="click-hint">Click</span>
+                </button>
+                <a class="btn" href="03-menu-editor.html?new=1">Build manually instead</a>
+              </div>
+            </div>
+            <div class="dv-generating" id="dvGenerating">
+              <div class="dv-spinner" aria-hidden="true"></div>
+              <h3>Generating menu draft…</h3>
+              <p id="genStatus">Reading catalog hierarchy and applying your preferences.</p>
+            </div>
+            <div class="tree-list" id="treeList" hidden></div>
+          </div>
+        </section>
+
+        <aside class="inspector" id="inspector">
+          <h3>Item details</h3>
+          <p class="hint">Select a menu item to edit label, link, and image — same controls as Phase 1.</p>
+          <div class="dv-empty" style="min-height:200px;border:none;box-shadow:none;padding:24px 8px">
+            <p style="margin:0;color:var(--ls-on-disabled)">Nothing selected</p>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Preferences sheet -->
+<div class="dv-modal" id="prefsModal" role="dialog" aria-labelledby="prefsTitle" aria-modal="true">
+  <div class="dv-sheet">
+    <div class="dv-sheet-head">
+      <div>
+        <h2 id="prefsTitle">Generate with Da Vinci</h2>
+        <p>Choose how the draft should be structured. You can edit everything after generation.</p>
+      </div>
+      <button type="button" class="drawer-close" id="prefsClose" aria-label="Close">
+        <i class="mdi mdi-close" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="dv-sheet-body">
+      <div class="dv-field">
+        <label>Menu type</label>
+        <div class="dv-choice" data-group="menuType">
+          <button type="button" class="dv-opt on" data-value="main"><strong>Main menu</strong><span>Header navigation</span></button>
+          <button type="button" class="dv-opt" data-value="mega"><strong>Mega menu</strong><span>Deep hierarchy + images</span></button>
+        </div>
+      </div>
+      <div class="dv-field">
+        <label>Style</label>
+        <div class="dv-choice four" data-group="style">
+          <button type="button" class="dv-opt" data-value="simple"><strong>Simple</strong><span>Flat top-level only</span></button>
+          <button type="button" class="dv-opt on" data-value="collection-led"><strong>Collection-led</strong><span>Mirror catalog tree</span></button>
+          <button type="button" class="dv-opt" data-value="brand-led"><strong>Brand-led</strong><span>Prioritise brands</span></button>
+          <button type="button" class="dv-opt" data-value="promotional"><strong>Promotional</strong><span>Sale &amp; new first</span></button>
+        </div>
+      </div>
+      <div class="dv-field">
+        <label>Max depth</label>
+        <div class="dv-choice" data-group="depth">
+          <button type="button" class="dv-opt" data-value="2"><strong>2 levels</strong><span>Parent + children</span></button>
+          <button type="button" class="dv-opt on" data-value="3"><strong>3 levels</strong><span>Aligned to mega menu</span></button>
+        </div>
+      </div>
+      <div class="dv-field">
+        <label>Sources</label>
+        <div class="dv-choice three" data-group="source">
+          <button type="button" class="dv-opt on" data-value="collections"><strong>Collections</strong><span>Primary source</span></button>
+          <button type="button" class="dv-opt" data-value="mixed"><strong>Collections + pages</strong><span>Include CMS pages</span></button>
+          <button type="button" class="dv-opt" data-value="revenue"><strong>High-revenue first</strong><span>When data available</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="dv-sheet-foot">
+      <button type="button" class="btn" id="prefsCancel">Cancel</button>
+      <button type="button" class="btn davinci-cta" id="prefsGenerate">
+        Generate draft <span class="click-hint">Click</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="_nav.js"></script>
+<script>
+(function () {
+  var prefs = {
+    menuType: "main",
+    style: "collection-led",
+    depth: 3,
+    source: "collections"
+  };
+  var state = {
+    menuName: "Main menu",
+    active: true,
+    items: [],
+    selectedId: null,
+    dirty: false,
+    fromDaVinci: false
+  };
+
+  var emptyEl = document.getElementById("dvEmpty");
+  var genEl = document.getElementById("dvGenerating");
+  var treeList = document.getElementById("treeList");
+  var banner = document.getElementById("dvBanner");
+  var refine = document.getElementById("dvRefine");
+  var dirtyPill = document.getElementById("dirtyPill");
+  var btnSave = document.getElementById("btnSave");
+  var btnPreview = document.getElementById("btnPreview");
+  var btnAddItem = document.getElementById("btnAddItem");
+  var btnAddCollections = document.getElementById("btnAddCollections");
+  var modal = document.getElementById("prefsModal");
+  var inspector = document.getElementById("inspector");
+
+  function toast(html) {
+    NavProto.toast(html);
+  }
+
+  function openPrefs() {
+    modal.classList.add("open");
+  }
+  function closePrefs() {
+    modal.classList.remove("open");
+  }
+
+  document.querySelectorAll(".dv-choice").forEach(function (group) {
+    group.addEventListener("click", function (e) {
+      var opt = e.target.closest(".dv-opt");
+      if (!opt) return;
+      group.querySelectorAll(".dv-opt").forEach(function (o) {
+        o.classList.remove("on");
+      });
+      opt.classList.add("on");
+      prefs[group.getAttribute("data-group")] = opt.getAttribute("data-value");
+      if (group.getAttribute("data-group") === "depth") {
+        prefs.depth = Number(opt.getAttribute("data-value"));
+      }
+    });
+  });
+
+  ["btnGenerateEmpty", "btnGenerateTop", "btnHeaderDaVinci", "btnRegenerate"].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener("click", openPrefs);
+  });
+  document.getElementById("prefsClose").addEventListener("click", closePrefs);
+  document.getElementById("prefsCancel").addEventListener("click", closePrefs);
+  modal.addEventListener("click", function (e) {
+    if (e.target === modal) closePrefs();
+  });
+
+  function setPhase(phase) {
+    emptyEl.hidden = phase !== "empty";
+    emptyEl.style.display = phase === "empty" ? "flex" : "none";
+    genEl.classList.toggle("show", phase === "generating");
+    treeList.hidden = phase !== "tree";
+    banner.hidden = phase !== "tree";
+    refine.classList.toggle("show", phase === "tree");
+    btnSave.disabled = phase !== "tree";
+    btnPreview.disabled = phase !== "tree";
+    btnAddItem.disabled = phase !== "tree";
+    btnAddCollections.disabled = phase !== "tree";
+  }
+
+  function flatten(items, depth) {
+    var rows = [];
+    (items || []).forEach(function (it) {
+      rows.push({ item: it, depth: depth });
+      if (it.children && it.children.length) {
+        rows = rows.concat(flatten(it.children, depth + 1));
+      }
+    });
+    return rows;
+  }
+
+  function findItem(items, id) {
+    for (var i = 0; i < (items || []).length; i++) {
+      if (items[i].id === id) return items[i];
+      var c = findItem(items[i].children || [], id);
+      if (c) return c;
+    }
+    return null;
+  }
+
+  function renderTree() {
+    var rows = flatten(state.items, 0);
+    if (!rows.length) {
+      setPhase("empty");
+      return;
+    }
+    setPhase("tree");
+    treeList.innerHTML = rows
+      .map(function (r) {
+        var it = r.item;
+        var sel = it.id === state.selectedId ? " selected" : "";
+        var ai = it.aiDraft ? " ai-draft" : "";
+        var meta =
+          (it.resourceType === "collection" ? "Collection" : it.resourceType || "Link") +
+          (it.link ? " · " + it.link : "");
+        return (
+          '<div class="tree-row' +
+          sel +
+          ai +
+          '" data-id="' +
+          it.id +
+          '" style="padding-left:' +
+          (12 + r.depth * 24) +
+          'px">' +
+          '<span class="handle" aria-hidden="true"><i class="mdi mdi-drag"></i></span>' +
+          '<span class="main-cell"><span class="label">' +
+          escapeHtml(it.label) +
+          '</span><span class="meta">' +
+          escapeHtml(meta) +
+          "</span></span>" +
+          "</div>"
+        );
+      })
+      .join("");
+  }
+
+  function escapeHtml(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function renderInspector() {
+    var item = findItem(state.items, state.selectedId);
+    if (!item) {
+      inspector.innerHTML =
+        "<h3>Item details</h3>" +
+        '<p class="hint">Select a menu item to edit label, link, and image — same controls as Phase 1.</p>' +
+        '<div class="dv-empty" style="min-height:160px;border:none;padding:24px 8px"><p style="margin:0;color:var(--ls-on-disabled)">Nothing selected</p></div>';
+      return;
+    }
+    inspector.innerHTML =
+      "<h3>Item details</h3>" +
+      '<p class="hint">Feeds storefront mega menu configuration</p>' +
+      (item.aiDraft
+        ? '<p class="hint" style="color:var(--ls-primary)">Suggested by Da Vinci — edit freely</p>'
+        : "") +
+      '<div class="field"><input id="fLabel" value="' +
+      escapeHtml(item.label) +
+      '" /><label for="fLabel">Menu page name</label></div>' +
+      '<div class="field"><input id="fLink" value="' +
+      escapeHtml(item.link || "") +
+      '" /><label for="fLink">Link to</label></div>' +
+      '<div class="field"><input readonly value="' +
+      escapeHtml((item.resourceType || "") + " · " + (item.resourceId || "custom")) +
+      '" /><label>Resource</label></div>' +
+      '<p class="hint">Open Phase 1 editor for full image / resource selects after Save.</p>' +
+      '<a class="btn" href="03-menu-editor.html">Continue in Phase 1 editor</a>';
+
+    var labelEl = document.getElementById("fLabel");
+    var linkEl = document.getElementById("fLink");
+    labelEl.addEventListener("input", function () {
+      item.label = labelEl.value;
+      item.aiDraft = false;
+      markDirty();
+      renderTree();
+    });
+    linkEl.addEventListener("input", function () {
+      item.link = linkEl.value;
+      markDirty();
+    });
+  }
+
+  function markDirty() {
+    state.dirty = true;
+    dirtyPill.hidden = false;
+  }
+
+  treeList.addEventListener("click", function (e) {
+    var row = e.target.closest(".tree-row");
+    if (!row) return;
+    state.selectedId = row.getAttribute("data-id");
+    renderTree();
+    renderInspector();
+  });
+
+  function runGenerate() {
+    closePrefs();
+    setPhase("generating");
+    var steps = [
+      "Reading catalog hierarchy…",
+      "Applying " + prefs.style.replace("-", " ") + " style…",
+      "Building tree (max " + prefs.depth + " levels)…",
+      "Linking collections and validating…"
+    ];
+    var i = 0;
+    document.getElementById("genStatus").textContent = steps[0];
+    var timer = setInterval(function () {
+      i++;
+      if (i < steps.length) {
+        document.getElementById("genStatus").textContent = steps[i];
+        return;
+      }
+      clearInterval(timer);
+      state.items = NavProto.buildDaVinciDraft(prefs);
+      state.selectedId = state.items[0] ? state.items[0].id : null;
+      state.fromDaVinci = true;
+      markDirty();
+      document.getElementById("bannerTitle").textContent =
+        "Draft generated · " + prefs.style.replace(/-/g, " ");
+      document.getElementById("bannerMeta").textContent =
+        " · " +
+        prefs.menuType +
+        " menu · depth " +
+        prefs.depth +
+        " · Review before Save. Nothing goes live automatically.";
+      renderTree();
+      renderInspector();
+      toast("<strong>Draft ready</strong>Review and refine before saving");
+    }, 700);
+  }
+
+  document.getElementById("prefsGenerate").addEventListener("click", runGenerate);
+
+  document.getElementById("btnDiscard").addEventListener("click", function () {
+    if (!confirm("Discard this Da Vinci draft and start over?")) return;
+    state.items = [];
+    state.selectedId = null;
+    state.dirty = false;
+    state.fromDaVinci = false;
+    dirtyPill.hidden = true;
+    setPhase("empty");
+    renderInspector();
+    toast("<strong>Draft discarded</strong>");
+  });
+
+  function applyRefine(kind, custom) {
+    if (!state.items.length) return;
+    setPhase("generating");
+    document.getElementById("genStatus").textContent = custom
+      ? "Refining: “" + custom + "”…"
+      : "Applying refine: " + kind + "…";
+    setTimeout(function () {
+      if (kind === "simpler" || (custom && /simpl/i.test(custom))) {
+        prefs.style = "simple";
+        prefs.depth = 2;
+        state.items = NavProto.buildDaVinciDraft(prefs);
+      } else if (kind === "sale" || (custom && /sale/i.test(custom))) {
+        prefs.style = "promotional";
+        state.items = NavProto.buildDaVinciDraft(prefs);
+      } else if (kind === "brand" || (custom && /brand/i.test(custom))) {
+        prefs.style = "brand-led";
+        state.items = NavProto.buildDaVinciDraft(prefs);
+      } else if (kind === "empty") {
+        toast("<strong>Checked</strong>No empty collections in this demo catalog");
+      } else if (custom) {
+        toast("<strong>Noted</strong>Demo applies style heuristics for custom prompts");
+        prefs.style = "collection-led";
+        state.items = NavProto.buildDaVinciDraft(prefs);
+      }
+      state.selectedId = state.items[0] ? state.items[0].id : null;
+      markDirty();
+      document.getElementById("bannerTitle").textContent = "Draft refined by Da Vinci";
+      renderTree();
+      renderInspector();
+      toast("<strong>Refined</strong>Review the updated tree");
+    }, 900);
+  }
+
+  document.getElementById("refineChips").addEventListener("click", function (e) {
+    var chip = e.target.closest("[data-refine]");
+    if (!chip) return;
+    applyRefine(chip.getAttribute("data-refine"));
+  });
+  document.getElementById("btnRefineSend").addEventListener("click", function () {
+    var v = document.getElementById("refinePrompt").value.trim();
+    if (!v) return;
+    applyRefine("custom", v);
+    document.getElementById("refinePrompt").value = "";
+  });
+
+  document.getElementById("btnSave").addEventListener("click", function () {
+    if (!state.items.length) return;
+    var draft = NavProto.createNewMenu({
+      menuName: document.getElementById("menuName").value || "Main menu",
+      items: state.items
+    });
+    draft.active = true;
+    draft.dirty = true;
+    var saved = NavProto.commitMenu(draft);
+    state.dirty = false;
+    dirtyPill.hidden = true;
+    toast(
+      "<strong>Saved to Navigations</strong>" +
+        (saved && saved.name ? saved.name : "Menu") +
+        " · continues in Phase 1 editor"
+    );
+    setTimeout(function () {
+      location.href = "01-navigations.html?journey=d";
+    }, 700);
+  });
+
+  document.getElementById("btnPreview").addEventListener("click", function () {
+    toast("<strong>Preview</strong>Use Phase 1 editor for full desktop/mobile mega menu preview");
+    location.href = "03-menu-editor.html";
+  });
+
+  document.getElementById("btnAddCollections").addEventListener("click", function () {
+    location.href = "03-menu-editor.html";
+  });
+  document.getElementById("btnAddItem").addEventListener("click", function () {
+    location.href = "03-menu-editor.html";
+  });
+
+  document.getElementById("protoReset").addEventListener("click", function () {
+    state.items = [];
+    state.selectedId = null;
+    state.dirty = false;
+    dirtyPill.hidden = true;
+    setPhase("empty");
+    renderInspector();
+  });
+
+  // Auto-open prefs when journey=d
+  var params = new URLSearchParams(location.search);
+  if (params.get("journey") === "d" || params.get("open") === "1") {
+    setTimeout(openPrefs, 400);
+  }
+
+  setPhase("empty");
+  renderInspector();
+})();
+</script>
+</body>
+</html>

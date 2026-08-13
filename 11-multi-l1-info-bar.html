@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Info bar · multiple L1s mixed hierarchy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="_nav.css" />
+  <link rel="stylesheet" href="_nav-v2.css" />
+  <link rel="stylesheet" href="_nav-v7.css" />
+  <link rel="stylesheet" href="_nav-v11.css" />
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<div class="proto-bar">
+  <strong>11 · Multi-L1 info bar</strong>
+  <a class="proto-pill" href="index.html">Hub</a>
+  <a class="proto-pill" href="07-side-panel-picker.html">7 · Panel</a>
+  <a class="proto-pill active" href="11-multi-l1-info-bar.html">11 · Multi L1</a>
+  <a class="proto-pill" href="https://www.figma.com/design/5Dd6KVq8SSMgZiwzPk4rsE/Navigation-menu-builder?node-id=11121-72729" target="_blank" rel="noopener">Board</a>
+</div>
+
+<main class="v11">
+  <p class="v11-rule">
+    <b>Rule:</b> One info bar for the whole Apply — not one per L1.
+    Bar shows <b>total count</b> + short breakdown when parents have different depths.
+  </p>
+
+  <div class="v11-shell">
+    <div class="v11-top">
+      <span class="back">← Navigations</span>
+      <span class="title">Main menu</span>
+      <span class="dirty">Unsaved changes</span>
+      <span class="btns"><button type="button" class="btn">Cancel</button><button type="button" class="btn">Preview</button><button type="button" class="btn primary">Save</button></span>
+    </div>
+
+    <div class="v11-body">
+      <section class="v11-tree">
+        <div class="head">Menu structure <span class="muted">empty until Apply</span></div>
+        <div class="empty">3 L1 parents selected in the panel →</div>
+      </section>
+
+      <aside class="v11-insp">
+        <h3>Item details</h3>
+        <p class="sub">Resource type · Collection</p>
+
+        <div class="v11-pick">
+          <div class="pick-head">
+            <strong>Choose collection</strong>
+            <span class="badge">47 selected</span>
+          </div>
+
+          <!-- Mixed hierarchy selection -->
+          <div class="pick-list">
+            <div class="row on l1"><input type="checkbox" checked disabled /><b>Furniture</b><span class="meta">→ L3 · 28 items</span><i>L1</i></div>
+            <div class="row nest on"><input type="checkbox" checked disabled />Sofas<span class="meta">+ children</span><i>L2</i></div>
+            <div class="row nest2 on"><input type="checkbox" checked disabled />Seats · 3 Seater…<i>L3</i></div>
+
+            <div class="row on l1"><input type="checkbox" checked disabled /><b>Outdoor</b><span class="meta">→ L2 · 15 items</span><i>L1</i></div>
+            <div class="row nest on"><input type="checkbox" checked disabled />Umbrellas · Tables…<i>L2</i></div>
+
+            <div class="row on l1"><input type="checkbox" checked disabled /><b>Sale</b><span class="meta">L1 only · 4 items</span><i>L1</i></div>
+          </div>
+
+          <!-- THE INFO BAR — multi L1 answer -->
+          <div class="v11-infobar" role="status">
+            <div class="ib-title"><b>47</b> selected across <b>3</b> L1 parents — only <b>50</b> can show</div>
+            <ul class="ib-break">
+              <li><span class="dot l1"></span><b>Furniture</b> 28 · deepest L3</li>
+              <li><span class="dot l2"></span><b>Outdoor</b> 15 · deepest L2</li>
+              <li><span class="dot l3"></span><b>Sale</b> 4 · L1 only</li>
+            </ul>
+            <p class="ib-note">Nesting stays under each parent. Cap applies to the total added this Apply.</p>
+            <div class="ib-acts">
+              <button type="button" class="btn primary">Add up to 50</button>
+              <button type="button" class="btn">Add 9</button>
+              <button type="button" class="btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <section class="v11-cases">
+    <h2>When the bar changes</h2>
+    <div class="cases">
+      <article>
+        <h3>1 L1, deep tree</h3>
+        <p>No breakdown list. Just: <b>28 selected — only 50 can show</b></p>
+      </article>
+      <article class="on">
+        <h3>Several L1s, mixed depth</h3>
+        <p>Add the 3-line breakdown so merchants see which parent is heavy.</p>
+      </article>
+      <article>
+        <h3>All under cap</h3>
+        <p>No bar. Show Apply only.</p>
+      </article>
+    </div>
+  </section>
+</main>
+</body>
+</html>

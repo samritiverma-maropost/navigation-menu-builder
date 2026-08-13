@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Menu editor v2 · post-call decisions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="_nav.css" />
+  <link rel="stylesheet" href="_nav-v2.css" />
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<div class="proto-bar">
+  <strong>v2</strong> Post-call decisions · separate from Phase 1
+  <a class="proto-pill" href="index.html">Hub</a>
+  <a class="proto-pill" href="03-menu-editor.html">3 · Phase 1</a>
+  <a class="proto-pill active" href="05-menu-editor-v2.html">5 · v2</a>
+  <a class="proto-pill" href="06-menu-structure-table.html">6 · Table columns</a>
+  <a class="proto-pill" href="07-side-panel-picker.html">7 · Panel picker</a>
+  <a class="proto-pill" href="08-feedback-closeout.html">8 · Close-out</a>
+  <a class="proto-pill" href="https://www.figma.com/design/RwUZjXlnzgSzCWWIt5qD8H/Commerce-Storefront?node-id=10559-76021" target="_blank" rel="noopener">Storefront Figma</a>
+  <button type="button" class="proto-pill" id="protoReset">Reset</button>
+</div>
+
+<div class="shell" style="min-height:calc(100vh - 37px)">
+  <header class="appbar">
+    <div class="brandcell">MAROPOST</div>
+    <div class="acct">Account 2000293 <span class="chev">&#9662;</span></div>
+    <div class="abar-search"><input placeholder="Search" readonly /></div>
+    <div class="abar-right"><a class="davinci" href="04-davinci-menu-builder.html">Da Vinci</a></div>
+  </header>
+  <div class="body">
+    <aside class="sidebar">
+      <div class="gs"><b>Sandstone Home</b><span>Store · Sales channel</span></div>
+      <div class="nav-sec">
+        <div class="nav-label">Storefront</div>
+        <a class="nav-sub" href="01-navigations.html">Navigations</a>
+        <a class="nav-sub active" href="05-menu-editor-v2.html">Main menu · v2</a>
+      </div>
+    </aside>
+    <main class="main editor-page v2-page">
+      <div class="editor-top">
+        <a class="back" href="01-navigations.html">&#8592; Navigations</a>
+        <input class="title-field" id="menuName" value="Main menu" aria-label="Menu name" />
+        <span class="dirty-pill" id="dirtyPill">Unsaved changes</span>
+        <button type="button" class="btn" id="btnCancel">Cancel</button>
+        <button type="button" class="btn" id="btnPreview">Preview</button>
+        <button type="button" class="btn primary" id="btnSave">Save</button>
+      </div>
+
+      <div class="v2-banner">
+        <i class="mdi mdi-information-outline" aria-hidden="true"></i>
+        <div>
+          One <b>Add</b> creates a draft in the tree — edit name, link, and resource in the side panel.
+          Resource picker opens only when linking Collection, Pages, etc.
+        </div>
+      </div>
+
+      <div class="v2-toolbar">
+        <div class="v2-menu-settings">
+          <label for="globalSort">Menu sort (all items)</label>
+          <select id="globalSort" aria-label="Global menu sort"></select>
+          <span class="v2-stat" title="Storefront shows at most this many nested children — no See more">
+            Display cap <b id="capLabel">9</b> · Storefront max <b id="sfLimitLabel">50</b>
+          </span>
+        </div>
+        <div class="spacer"></div>
+        <button type="button" class="btn primary" id="btnAdd">Add</button>
+      </div>
+
+      <div class="editor-body">
+        <section class="tree-pane">
+          <div class="v2-bulk" id="bulkBar" role="status">
+            <span><span class="count" id="bulkCount">0</span> selected</span>
+            <button type="button" class="btn primary" id="bulkHide">Hide</button>
+            <button type="button" class="btn ghost" id="bulkShow">Unhide</button>
+            <button type="button" class="btn ghost" id="bulkRemove">Remove</button>
+            <button type="button" class="btn ghost" id="bulkClear">Clear</button>
+          </div>
+          <div class="tree-toolbar">
+            <h2>Menu structure</h2>
+            <div class="depth-legend" aria-label="Nesting levels">
+              <span class="dl l1"><i></i> L1</span>
+              <span class="dl l2"><i></i> L2</span>
+              <span class="dl l3"><i></i> L3</span>
+              <span class="dl-note">Max L3</span>
+            </div>
+          </div>
+          <p class="tree-dnd-hint"><i class="mdi mdi-drag" aria-hidden="true"></i> Drag the handle to reorder · drop on middle to nest · Indent / Outdent in row menu</p>
+          <div class="tree-cols-head" aria-hidden="true">
+            <div class="row-lead"></div>
+            <div class="main-cell">Item</div>
+            <div class="col-include">Include children</div>
+            <div class="col-level">Level</div>
+            <div class="col-menu"></div>
+          </div>
+          <div class="tree-list" id="treeList"></div>
+        </section>
+        <aside class="inspector" id="inspector"></aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Resource picker (only when linking a catalog resource — not for Custom URL) -->
+<div class="v2-modal" id="addModal" aria-hidden="true">
+  <div class="v2-sheet wide" role="dialog" aria-labelledby="addTitle">
+    <div class="v2-sheet-head">
+      <h2 id="addTitle">Choose resource</h2>
+      <button type="button" class="drawer-close" id="addClose" aria-label="Close"><i class="mdi mdi-close"></i></button>
+    </div>
+    <div class="v2-sheet-body">
+      <div class="picker-type-bar">
+        <label class="picker-type-label" for="pickerResType">Resource type</label>
+        <div class="picker-type-seg" id="pickerResType" role="tablist" aria-label="Resource type"></div>
+      </div>
+      <p class="field-hint" id="pickerTypeHint" style="margin-top:8px">Switch type anytime — no need to close this dialog.</p>
+      <div class="drill nest-picker" id="drill">
+        <div class="drill-tools">
+          <select id="pickerSort" aria-label="Sort nested list"></select>
+          <input type="search" id="pickerSearch" placeholder="Search nested list…" />
+          <button type="button" class="btn ghost nest-expand-all" id="pickerExpandAll" title="Expand all">Expand all</button>
+          <span class="cap-note">Up to <b id="pickerCap">9</b> per level</span>
+        </div>
+        <div class="nest-legend" aria-hidden="true">
+          <span><i class="nest-swatch l1"></i> L1 · charcoal</span>
+          <span><i class="nest-swatch l2"></i> L2 · blue</span>
+          <span><i class="nest-swatch l3"></i> L3 · teal</span>
+        </div>
+        <div class="picker-cols-head" aria-hidden="true">
+          <span class="pch-item">Item</span>
+          <span class="pch-kids" title="Number of nested children">Children</span>
+          <span class="pch-level" title="Nesting level in catalog">Level</span>
+        </div>
+        <div class="drill-list" id="drillList" role="tree"></div>
+      </div>
+      <div class="selected-chips" id="selectedChips"></div>
+      <p class="sf-note">Storefront shows at most the menu display cap / storefront limit — anything past that simply does not show (no “See more”).</p>
+    </div>
+    <div class="v2-sheet-foot">
+      <button type="button" class="btn" id="addCancel">Cancel</button>
+      <button type="button" class="btn primary" id="addNext">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preview -->
+<div class="modal" id="previewModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Theme preview</h3>
+      <button type="button" class="drawer-close" id="previewClose"><i class="mdi mdi-close"></i></button>
+    </div>
+    <p class="preview-cap-note">Items past the display/storefront limit are omitted — no See more link.</p>
+    <div class="device-toggle" style="padding:8px 16px">
+      <button type="button" class="on" data-device="desktop">Desktop</button>
+      <button type="button" data-device="mobile">Mobile</button>
+    </div>
+    <div class="storefront desktop" id="storefront"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="_nav-v2.js"></script>
+<script>
+(function () {
+  var state = NavV2.load();
+  var draftType = "custom";
+  var pickerExpanded = {};
+  var pickerSelected = {};
+  var includeChildrenPending = null;
+
+  var menuNameEl = document.getElementById("menuName");
+  var treeList = document.getElementById("treeList");
+  var inspector = document.getElementById("inspector");
+  var globalSort = document.getElementById("globalSort");
+  var addModal = document.getElementById("addModal");
+
+  menuNameEl.value = state.menuName;
+  document.getElementById("capLabel").textContent = state.displayCap;
+  document.getElementById("sfLimitLabel").textContent = state.storefrontLimit;
+
+  NavV2.SORT_OPTIONS.forEach(function (o) {
+    var opt = document.createElement("option");
+    opt.value = o.id;
+    opt.textContent = o.label;
+    if (o.id === state.globalSort) opt.selected = true;
+    globalSort.appendChild(opt);
+
+    if (o.id === "manual") return;
+    var opt2 = opt.cloneNode(true);
+    document.getElementById("pickerSort").appendChild(opt2);
+  });
+  document.getElementById("pickerSort").value =
+    state.globalSort === "manual" ? "az" : state.globalSort;
+  document.getElementById("pickerCap").textContent = state.displayCap;
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function persist() {
+    state.menuName = menuNameEl.value;
+    state.dirty = true;
+    NavV2.save(state);
+    document.getElementById("dirtyPill").hidden = !state.dirty;
+  }
+
+  function sortedTree() {
+    var byParent = {};
+    state.items.forEach(function (it) {
+      var p = it.parentId || "root";
+      if (!byParent[p]) byParent[p] = [];
+      byParent[p].push(it);
+    });
+    Object.keys(byParent).forEach(function (k) {
+      byParent[k] = NavV2.sortNodes(
+        byParent[k].map(function (it) {
+          return { name: it.label, _item: it, created: 0 };
+        }),
+        state.globalSort
+      ).map(function (n) {
+        return n._item;
+      });
+    });
+    var out = [];
+    function walk(pid, depth) {
+      var kids = byParent[pid] || [];
+      var visible = kids.slice(0, state.displayCap);
+      var truncated = kids.length > state.displayCap;
+      visible.forEach(function (it) {
+        it.depth = depth;
+        it._siblingTotal = kids.length;
+        it._truncated = false;
+        out.push(it);
+        walk(it.id, depth + 1);
+      });
+      if (truncated && visible.length) {
+        visible[visible.length - 1]._truncated = true;
+        visible[visible.length - 1]._hiddenCount = kids.length - state.displayCap;
+      }
+    }
+    walk("root", 1);
+    return out;
+  }
+
+  function checkedCount() {
+    return Object.keys(state.checked).filter(function (id) {
+      return state.checked[id];
+    }).length;
+  }
+
+  function updateBulk() {
+    var n = checkedCount();
+    var bar = document.getElementById("bulkBar");
+    bar.classList.toggle("open", n > 0);
+    document.getElementById("bulkCount").textContent = String(n);
+  }
+
+  function renderTree() {
+    var items = sortedTree();
+    if (!items.length) {
+      treeList.innerHTML =
+        '<div class="tree-empty"><h3>No items yet</h3><p>Use <b>Add</b> — a draft appears here and details open in the side panel.</p></div>';
+      renderInspector();
+      updateBulk();
+      return;
+    }
+
+    treeList.innerHTML = items
+      .map(function (it) {
+        var depth = Math.min(it.depth || 1, 3);
+        var tone = "depth-tone-" + depth;
+        var sel = it.id === state.selectedId ? " selected" : "";
+        var hid = it.hidden ? " is-hidden" : "";
+        var checked = state.checked[it.id] ? " checked" : "";
+        var meta = resourceMeta(it);
+        var childN = (it.childIds && it.childIds.length) || 0;
+        var canChildren =
+          it.resourceId && NavV2.descendantCount(it.resourceId) > 0 && depth < state.maxDepth;
+        var limitWarn =
+          it._truncated
+            ? '<span class="limit-pill warn" title="Extra siblings hidden in editor & storefront">+' +
+              it._hiddenCount +
+              " hidden</span>"
+            : childN > state.storefrontLimit
+              ? '<span class="limit-pill warn">' + state.storefrontLimit + "/" + childN + "</span>"
+              : childN
+                ? '<span class="limit-pill">' + Math.min(childN, state.displayCap) + "/" + childN + "</span>"
+                : "";
+
+        return (
+          '<div class="tree-row ' +
+          tone +
+          sel +
+          hid +
+          " depth-l" +
+          depth +
+          '" data-id="' +
+          escapeHtml(it.id) +
+          '" style="--nest:' +
+          (depth - 1) +
+          '">' +
+          '<div class="row-lead">' +
+          '<input type="checkbox" class="tree-check" data-check="' +
+          escapeHtml(it.id) +
+          '"' +
+          checked +
+          " />" +
+          '<span class="handle" title="Drag to reorder" aria-label="Drag"><i class="mdi mdi-drag" aria-hidden="true"></i></span>' +
+          "</div>" +
+          '<div class="main-cell">' +
+          '<div class="label">' +
+          escapeHtml(it.label) +
+          (it.hidden ? ' <i class="mdi mdi-eye-off-outline" title="Hidden"></i>' : "") +
+          "</div>" +
+          '<div class="meta">' +
+          escapeHtml(meta) +
+          "</div></div>" +
+          '<div class="col-include">' +
+          (canChildren
+            ? '<span class="child-col" title="When on, nested resources are added under this item (up to storefront limit)">' +
+              '<button type="button" class="mini-switch' +
+              (it.includeChildren ? " on" : "") +
+              '" data-include="' +
+              escapeHtml(it.id) +
+              '" aria-label="Include child collections" aria-pressed="' +
+              (it.includeChildren ? "true" : "false") +
+              '"></button>' +
+              '<span class="child-count">' +
+              (it.includeChildren ? childN : NavV2.descendantCount(it.resourceId)) +
+              "</span></span>"
+            : '<span class="col-na" title="No nested resources">—</span>') +
+          "</div>" +
+          '<div class="col-level">' +
+          limitWarn +
+          '<span class="depth-chip l' +
+          depth +
+          '">L' +
+          depth +
+          "</span></div>" +
+          '<div class="col-menu">' +
+          '<button type="button" class="row-menu" data-menu="' +
+          escapeHtml(it.id) +
+          '" aria-label="Actions"><i class="mdi mdi-dots-vertical"></i></button>' +
+          "</div></div>"
+        );
+      })
+      .join("");
+
+    treeList.querySelectorAll(".tree-row").forEach(function (row) {
+      row.addEventListener("click", function (e) {
+        if (e.target.closest("input,button,.child-col,.handle,.row-lead")) return;
+        state.selectedId = row.getAttribute("data-id");
+        persist();
+        renderTree();
+      });
+    });
+
+    bindTreeDnD();
+
+    treeList.querySelectorAll("[data-check]").forEach(function (cb) {
+      cb.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var id = cb.getAttribute("data-check");
+        if (cb.checked) state.checked[id] = true;
+        else delete state.checked[id];
+        persist();
+        updateBulk();
+      });
+    });
+
+    treeList.querySelectorAll("[data-include]").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleIncludeChildren(btn.getAttribute("data-include"));
+      });
+    });
+
+    treeList.querySelectorAll("[data-menu]").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        openRowMenu(btn, btn.getAttribute("data-menu"));
+      });
+    });
+
+    renderInspector();
+    updateBulk();
+  }
+
+  function resourceMeta(it) {
+    if (it.resourceType === "custom") return "Custom · " + (it.link || "/");
+    var cat = NavV2.byId(it.resourceId);
+    if (!cat) return it.resourceType;
+    var path = NavV2.pathOf(cat.id)
+      .map(function (p) {
+        return p.name;
+      })
+      .join(" → ");
+    return typeLabel(it.resourceType) + " · " + path;
+  }
+
+  function typeLabel(id) {
+    var t = NavV2.RESOURCE_TYPES.find(function (r) {
+      return r.id === id;
+    });
+    return t ? t.label : id;
+  }
+
+  function findItem(id) {
+    return state.items.find(function (i) {
+      return i.id === id;
+    });
+  }
+
+  /* —— Drag & drop (reorder + nest) —— */
+  var dragId = null;
+  var dropPos = null;
+
+  function descendantIds(rootId) {
+    var ids = {};
+    var queue = [rootId];
+    while (queue.length) {
+      var cur = queue.shift();
+      ids[cur] = true;
+      state.items.forEach(function (it) {
+        if (it.parentId === cur && !ids[it.id]) queue.push(it.id);
+      });
+    }
+    return ids;
+  }
+
+  function collectSubtree(rootId) {
+    var out = [];
+    function walk(id) {
+      var node = findItem(id);
+      if (!node) return;
+      out.push(node);
+      state.items.forEach(function (it) {
+        if (it.parentId === id) walk(it.id);
+      });
+    }
+    walk(rootId);
+    return out;
+  }
+
+  function subtreeDepth(rootId) {
+    var max = 1;
+    function walk(id, d) {
+      max = Math.max(max, d);
+      state.items.forEach(function (it) {
+        if (it.parentId === id) walk(it.id, d + 1);
+      });
+    }
+    walk(rootId, 1);
+    return max;
+  }
+
+  function clearDropClasses() {
+    treeList.querySelectorAll(".tree-row").forEach(function (r) {
+      r.classList.remove("drop-before", "drop-after", "drop-inside", "dragging");
+    });
+  }
+
+  function resolveDropZone(row, clientY) {
+    var rect = row.getBoundingClientRect();
+    var y = clientY - rect.top;
+    var h = rect.height || 1;
+    if (y < h * 0.28) return "before";
+    if (y > h * 0.72) return "after";
+    return "inside";
+  }
+
+  function canDrop(sourceId, targetId, pos) {
+    if (!sourceId || !targetId || sourceId === targetId) return false;
+    if (descendantIds(sourceId)[targetId]) return false;
+    var source = findItem(sourceId);
+    var target = findItem(targetId);
+    if (!source || !target) return false;
+    var subDepth = subtreeDepth(sourceId);
+    if (pos === "inside") {
+      return (target.depth || 1) + subDepth <= state.maxDepth;
+    }
+    var siblingParentDepth = target.parentId
+      ? (findItem(target.parentId) || {}).depth || 1
+      : 0;
+    var newDepth = siblingParentDepth + 1;
+    return newDepth + subDepth - 1 <= state.maxDepth;
+  }
+
+  function applyDepthsFromParents() {
+    var byId = {};
+    state.items.forEach(function (it) {
+      byId[it.id] = it;
+    });
+    function depthOf(it) {
+      if (!it.parentId) return 1;
+      var p = byId[it.parentId];
+      if (!p) return 1;
+      return Math.min(state.maxDepth, depthOf(p) + 1);
+    }
+    state.items.forEach(function (it) {
+      it.depth = depthOf(it);
+    });
+  }
+
+  function moveItem(sourceId, targetId, pos) {
+    if (!canDrop(sourceId, targetId, pos)) {
+      NavV2.toast(
+        "<strong>Can't drop here</strong>Max nesting is L" +
+          state.maxDepth +
+          ", or target is inside this item"
+      );
+      return false;
+    }
+    var blocked = descendantIds(sourceId);
+    var moving = collectSubtree(sourceId);
+    var rest = [];
+    state.items.forEach(function (it) {
+      if (!blocked[it.id]) rest.push(it);
+    });
+    var source = moving[0];
+    var target =
+      rest.find(function (i) {
+        return i.id === targetId;
+      }) || findItem(targetId);
+    if (!source || !target) return false;
+
+    if (pos === "inside") {
+      source.parentId = target.id;
+    } else {
+      source.parentId = target.parentId || null;
+    }
+
+    var newItems = [];
+    var inserted = false;
+    function insertMoving() {
+      if (inserted) return;
+      moving.forEach(function (m) {
+        newItems.push(m);
+      });
+      inserted = true;
+    }
+
+    if (pos === "inside") {
+      rest.forEach(function (it) {
+        newItems.push(it);
+        if (it.id === targetId) insertMoving();
+      });
+      if (!inserted) insertMoving();
+    } else if (pos === "before") {
+      rest.forEach(function (it) {
+        if (it.id === targetId) insertMoving();
+        newItems.push(it);
+      });
+      if (!inserted) insertMoving();
+    } else {
+      var targetBlock = descendantIds(targetId);
+      newItems = [];
+      inserted = false;
+      var pastTarget = false;
+      rest.forEach(function (it) {
+        if (it.id === targetId) pastTarget = true;
+        if (pastTarget && !targetBlock[it.id] && !inserted) insertMoving();
+        newItems.push(it);
+      });
+      if (!inserted) insertMoving();
+    }
+
+    state.items = newItems;
+    applyDepthsFromParents();
+    state.selectedId = sourceId;
+    if (state.globalSort !== "manual") {
+      state.globalSort = "manual";
+      globalSort.value = "manual";
+    }
+    persist();
+    return true;
+  }
+
+  function bindTreeDnD() {
+    treeList.querySelectorAll(".tree-row").forEach(function (row) {
+      var handle = row.querySelector(".handle");
+      if (!handle) return;
+
+      handle.addEventListener("mousedown", function () {
+        row.setAttribute("draggable", "true");
+      });
+      row.addEventListener("dragstart", function (e) {
+        if (row.getAttribute("draggable") !== "true") {
+          e.preventDefault();
+          return;
+        }
+        dragId = row.getAttribute("data-id");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", dragId);
+        row.classList.add("dragging");
+      });
+      row.addEventListener("dragend", function () {
+        dragId = null;
+        dropPos = null;
+        row.removeAttribute("draggable");
+        clearDropClasses();
+      });
+      row.addEventListener("dragover", function (e) {
+        if (!dragId) return;
+        var tid = row.getAttribute("data-id");
+        var pos = resolveDropZone(row, e.clientY);
+        if (!canDrop(dragId, tid, pos)) {
+          if (pos === "inside") {
+            var mid = row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2;
+            pos = e.clientY < mid ? "before" : "after";
+          }
+          if (!canDrop(dragId, tid, pos)) {
+            e.dataTransfer.dropEffect = "none";
+            clearDropClasses();
+            var draggingBad = treeList.querySelector('.tree-row[data-id="' + dragId + '"]');
+            if (draggingBad) draggingBad.classList.add("dragging");
+            return;
+          }
+        }
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        dropPos = pos;
+        clearDropClasses();
+        var dragging = treeList.querySelector('.tree-row[data-id="' + dragId + '"]');
+        if (dragging) dragging.classList.add("dragging");
+        row.classList.add("drop-" + pos);
+      });
+      row.addEventListener("dragleave", function (e) {
+        if (!row.contains(e.relatedTarget)) {
+          row.classList.remove("drop-before", "drop-after", "drop-inside");
+        }
+      });
+      row.addEventListener("drop", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var tid = row.getAttribute("data-id");
+        var pos = dropPos || resolveDropZone(row, e.clientY);
+        var sid = dragId || e.dataTransfer.getData("text/plain");
+        clearDropClasses();
+        if (moveItem(sid, tid, pos)) {
+          var label = (findItem(sid) || {}).label || "Item";
+          var msg =
+            pos === "inside"
+              ? "<strong>Nested</strong>" +
+                escapeHtml(label) +
+                " under " +
+                escapeHtml((findItem(tid) || {}).label || "parent")
+              : "<strong>Moved</strong>" + escapeHtml(label);
+          NavV2.toast(msg);
+        }
+        dragId = null;
+        dropPos = null;
+        renderTree();
+      });
+    });
+  }
+
+  function openRowMenu(anchor, id) {
+    var existing = document.getElementById("rowCtx");
+    if (existing) existing.remove();
+    var item = findItem(id);
+    if (!item) return;
+    var menu = document.createElement("div");
+    menu.id = "rowCtx";
+    menu.className = "add-menu open";
+    menu.style.position = "fixed";
+    var r = anchor.getBoundingClientRect();
+    menu.style.top = r.bottom + 4 + "px";
+    menu.style.right = window.innerWidth - r.right + "px";
+    menu.style.left = "auto";
+    menu.innerHTML =
+      '<button type="button" data-act="indent">Indent</button>' +
+      '<button type="button" data-act="outdent">Outdent</button>' +
+      '<button type="button" data-act="hide">' +
+      (item.hidden ? "Unhide" : "Hide") +
+      "</button>" +
+      '<button type="button" data-act="child">Add child collection</button>' +
+      '<button type="button" data-act="remove">Remove from menu</button>';
+    document.body.appendChild(menu);
+    menu.addEventListener("click", function (e) {
+      var act = e.target.getAttribute("data-act");
+      if (!act) return;
+      if (act === "indent") indent(id);
+      if (act === "outdent") outdent(id);
+      if (act === "hide") {
+        item.hidden = !item.hidden;
+        persist();
+        renderTree();
+      }
+      if (act === "child") {
+        addNewItem({ parentId: id, openPicker: "collection", label: "New collection" });
+      }
+      if (act === "remove") removeItems([id]);
+      menu.remove();
+    });
+    setTimeout(function () {
+      document.addEventListener(
+        "click",
+        function once() {
+          menu.remove();
+        },
+        { once: true }
+      );
+    }, 0);
+  }
+
+  function indent(id) {
+    var items = sortedTree();
+    var idx = items.findIndex(function (i) {
+      return i.id === id;
+    });
+    if (idx <= 0) return;
+    var item = findItem(id);
+    var prev = items[idx - 1];
+    if ((prev.depth || 1) >= state.maxDepth) {
+      NavV2.toast("<strong>Max depth</strong>Nesting capped at L" + state.maxDepth);
+      return;
+    }
+    if ((item.depth || 1) >= state.maxDepth) {
+      NavV2.toast("<strong>Max depth</strong>Nesting capped at L" + state.maxDepth);
+      return;
+    }
+    item.parentId = prev.id;
+    item.depth = (prev.depth || 1) + 1;
+    persist();
+    renderTree();
+  }
+
+  function outdent(id) {
+    var item = findItem(id);
+    if (!item || !item.parentId) return;
+    var parent = findItem(item.parentId);
+    item.parentId = parent ? parent.parentId : null;
+    item.depth = Math.max(1, (item.depth || 2) - 1);
+    persist();
+    renderTree();
+  }
+
+  function removeItems(ids) {
+    var set = {};
+    ids.forEach(function (id) {
+      set[id] = true;
+    });
+    function collect(id) {
+      state.items.forEach(function (it) {
+        if (it.parentId === id) {
+          set[it.id] = true;
+          collect(it.id);
+        }
+      });
+    }
+    ids.forEach(collect);
+    state.items = state.items.filter(function (it) {
+      return !set[it.id];
+    });
+    Object.keys(set).forEach(function (id) {
+      delete state.checked[id];
+    });
+    if (set[state.selectedId]) state.selectedId = state.items[0] ? state.items[0].id : null;
+    persist();
+    renderTree();
+    NavV2.toast("<strong>Removed</strong>" + Object.keys(set).length + " item(s)");
+  }
+
+  function toggleIncludeChildren(id) {
+    var item = findItem(id);
+    if (!item || !item.resourceId) return;
+    var total = NavV2.descendantCount(item.resourceId);
+    if (!item.includeChildren) {
+      if (total >= NavV2.CHILD_ALERT_THRESHOLD) {
+        includeChildrenPending = { id: id, total: total };
+        state.selectedId = id;
+        persist();
+        renderTree();
+        return;
+      }
+      applyIncludeChildren(item, total);
+    } else {
+      item.includeChildren = false;
+      item.childIds = [];
+      /* remove auto-added children */
+      state.items = state.items.filter(function (it) {
+        return it.parentId !== item.id || !it._fromInclude;
+      });
+      persist();
+      renderTree();
+    }
+  }
+
+  function applyIncludeChildren(item, total, reducedTo) {
+    var kids = NavV2.childrenOf(item.resourceId);
+    kids = NavV2.sortNodes(kids, state.globalSort);
+    var limit = reducedTo != null ? reducedTo : Math.min(total, state.storefrontLimit);
+    kids = kids.slice(0, limit);
+    item.includeChildren = true;
+    item.childIds = kids.map(function (k) {
+      return k.id;
+    });
+    /* clear previous */
+    state.items = state.items.filter(function (it) {
+      return it.parentId !== item.id || !it._fromInclude;
+    });
+    var nextDepth = (item.depth || 1) + 1;
+    if (nextDepth > state.maxDepth) {
+      NavV2.toast("<strong>Max depth</strong>Cannot nest past L" + state.maxDepth);
+      item.includeChildren = false;
+      item.childIds = [];
+      persist();
+      renderTree();
+      return;
+    }
+    kids.forEach(function (k) {
+      state.items.push({
+        id: NavV2.uid("mi"),
+        label: k.name,
+        resourceType: k.type,
+        resourceId: k.id,
+        link: NavV2.resourcePath(k),
+        depth: nextDepth,
+        parentId: item.id,
+        imageMode: k.type === "collection" ? "collection" : "none",
+        hidden: false,
+        includeChildren: false,
+        childIds: [],
+        _fromInclude: true,
+        status: "ok"
+      });
+    });
+    includeChildrenPending = null;
+    persist();
+    renderTree();
+    NavV2.toast(
+      "<strong>Children included</strong>" +
+        kids.length +
+        " of " +
+        total +
+        " · storefront shows ≤ " +
+        state.storefrontLimit
+    );
+  }
+
+  function renderInspector() {
+    var item = findItem(state.selectedId);
+    if (!item) {
+      inspector.innerHTML =
+        "<h3>Item details</h3><p class=\"hint\">Click <b>Add</b> to create an item — name, link, and resource type are edited here.</p>" +
+        '<div class="inspector-empty">Nothing selected</div>';
+      return;
+    }
+
+    var alertHtml = "";
+    if (includeChildrenPending && includeChildrenPending.id === item.id) {
+      var t = includeChildrenPending.total;
+      alertHtml =
+        '<div class="child-alert" role="alert">' +
+        "<strong>Include child collections</strong> would add <b>" +
+        t +
+        "</b> items. Supported storefront limit is <b>" +
+        state.storefrontLimit +
+        "</b> — anything past that simply does not show (no See more)." +
+        '<div class="actions">' +
+        '<button type="button" class="btn primary" id="alertReduce">Add first ' +
+        state.storefrontLimit +
+        "</button>" +
+        '<button type="button" class="btn" id="alertNine">Add first ' +
+        state.displayCap +
+        "</button>" +
+        '<button type="button" class="btn" id="alertCancel">Cancel</button>' +
+        "</div></div>";
+    }
+
+    inspector.innerHTML =
+      "<h3>Item details</h3>" +
+      '<p class="hint">Edit everything for the selected item here — no separate add form.</p>' +
+      alertHtml +
+      '<div class="field"><input id="fLabel" value="' +
+      escapeHtml(item.label) +
+      '" /><label for="fLabel">Menu page name</label></div>' +
+      '<div class="field"><input id="fLink" value="' +
+      escapeHtml(item.link || "") +
+      '"' +
+      (item.resourceType !== "custom" ? " readonly" : "") +
+      ' /><label for="fLink">Link to</label></div>' +
+      (item.resourceType !== "custom"
+        ? '<p class="field-hint">Link comes from the linked resource. Switch to Custom URL to edit.</p>'
+        : '<p class="field-hint">Custom URL is the default. Change resource type below to link a catalog item.</p>') +
+      '<div class="field"><select id="fResType">' +
+      NavV2.RESOURCE_TYPES.map(function (r) {
+        return (
+          '<option value="' +
+          r.id +
+          '"' +
+          (item.resourceType === r.id ? " selected" : "") +
+          ">" +
+          escapeHtml(r.label) +
+          "</option>"
+        );
+      }).join("") +
+      '</select><label for="fResType">Resource type</label></div>' +
+      (item.resourceType !== "custom"
+        ? '<button type="button" class="btn" id="inspPick" style="width:100%;margin-bottom:12px">' +
+          (item.resourceId ? "Change linked resource" : "Choose resource") +
+          "</button>"
+        : "") +
+      (item.resourceId
+        ? '<p class="field-hint">' + escapeHtml(resourceMeta(item)) + "</p>"
+        : "") +
+      '<div class="field"><label style="position:static;padding:0;background:transparent;display:block;margin-bottom:8px">Image source</label><div class="seg" id="imgSeg">' +
+      ["collection", "custom", "none"]
+        .map(function (m) {
+          return (
+            '<button type="button" data-img="' +
+            m +
+            '"' +
+            (item.imageMode === m ? ' class="on"' : "") +
+            ">" +
+            (m === "collection" ? "Collection" : m === "custom" ? "Custom" : "None") +
+            "</button>"
+          );
+        })
+        .join("") +
+      "</div></div>" +
+      imagePanel(item) +
+      '<div class="v2-insp-actions">' +
+      '<button type="button" class="btn" id="inspHide" style="width:100%">' +
+      (item.hidden ? "Unhide on storefront" : "Hide on storefront") +
+      "</button>" +
+      '<button type="button" class="btn" id="inspDelete" style="width:100%">Remove from menu</button>' +
+      "</div>";
+
+    document.getElementById("fLabel").addEventListener("change", function () {
+      item.label = this.value;
+      persist();
+      renderTree();
+    });
+    document.getElementById("fLink").addEventListener("change", function () {
+      if (item.resourceType !== "custom") return;
+      item.link = this.value;
+      persist();
+      renderTree();
+    });
+    document.getElementById("fResType").addEventListener("change", function () {
+      var next = this.value;
+      if (next === "custom") {
+        item.resourceType = "custom";
+        item.resourceId = null;
+        item.imageMode = "none";
+        if (!item.link) item.link = "/";
+        persist();
+        renderTree();
+        return;
+      }
+      item.resourceType = next;
+      persist();
+      openResourcePicker({ editId: item.id, forceType: next });
+    });
+    var pickBtn = document.getElementById("inspPick");
+    if (pickBtn) {
+      pickBtn.addEventListener("click", function () {
+        openResourcePicker({ editId: item.id, forceType: item.resourceType });
+      });
+    }
+    document.querySelectorAll("#imgSeg button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        item.imageMode = b.getAttribute("data-img");
+        if (item.imageMode === "collection" && item.resourceType !== "collection") {
+          NavV2.toast("<strong>Image</strong>Collection image works best with a collection resource");
+        }
+        persist();
+        renderInspector();
+      });
+    });
+    document.getElementById("inspHide").addEventListener("click", function () {
+      item.hidden = !item.hidden;
+      persist();
+      renderTree();
+    });
+    document.getElementById("inspDelete").addEventListener("click", function () {
+      removeItems([item.id]);
+    });
+    var ar = document.getElementById("alertReduce");
+    if (ar) {
+      ar.addEventListener("click", function () {
+        applyIncludeChildren(item, includeChildrenPending.total, state.storefrontLimit);
+      });
+      document.getElementById("alertNine").addEventListener("click", function () {
+        applyIncludeChildren(item, includeChildrenPending.total, state.displayCap);
+      });
+      document.getElementById("alertCancel").addEventListener("click", function () {
+        includeChildrenPending = null;
+        renderInspector();
+      });
+    }
+  }
+
+  function imagePanel(item) {
+    if (item.imageMode === "none") {
+      return '<div class="img-empty"><strong>No image on this item</strong><p>Default stays off until you choose Collection or Custom.</p></div>';
+    }
+    if (item.imageMode === "custom") {
+      return (
+        '<div class="img-preview"><div class="img-thumb custom-thumb"></div><div class="img-meta"><strong>Custom image</strong><p>Upload or paste a URL in production.</p></div></div>'
+      );
+    }
+    var src = item.resourceId ? NavV2.byId(item.resourceId) : null;
+    return (
+      '<div class="img-preview"><div class="img-thumb"></div><div class="img-meta"><strong>Using collection image</strong><p>Pulled from ' +
+      escapeHtml(src ? src.name : "resource") +
+      ". Shown in the mega menu feature tile.</p></div></div>"
+    );
+  }
+
+  /* ——— Create in side panel; picker only for catalog resources ——— */
+  function addNewItem(opts) {
+    opts = opts || {};
+    var parentId = opts.parentId || null;
+    var parent = parentId ? findItem(parentId) : null;
+    var depth = parent ? (parent.depth || 1) + 1 : 1;
+    if (depth > state.maxDepth) {
+      NavV2.toast("<strong>Max depth</strong>Cannot nest past L" + state.maxDepth);
+      return;
+    }
+    var id = NavV2.uid("mi");
+    state.items.push({
+      id: id,
+      label: opts.label || "New page",
+      resourceType: "custom",
+      resourceId: null,
+      link: "/",
+      depth: depth,
+      parentId: parentId,
+      imageMode: "none",
+      hidden: false,
+      includeChildren: false,
+      childIds: [],
+      status: "ok"
+    });
+    state.selectedId = id;
+    persist();
+    renderTree();
+    setTimeout(function () {
+      var el = document.getElementById("fLabel");
+      if (el) {
+        el.focus();
+        el.select();
+      }
+    }, 0);
+    if (opts.openPicker) {
+      openResourcePicker({ editId: id, forceType: opts.openPicker, parentId: parentId });
+    }
+  }
+
+  function syncPickerChrome() {
+    document.getElementById("addTitle").textContent =
+      draftType === "custom" ? "Custom URL" : "Choose " + typeLabel(draftType).toLowerCase();
+    document.getElementById("pickerTypeHint").textContent =
+      draftType === "custom"
+        ? "Custom URL uses the link field in the side panel — no catalog pick needed."
+        : "Wrong type? Switch above without closing. Parent + child selections nest as L1 → L2 → L3.";
+    var bar = document.getElementById("pickerResType");
+    if (!bar) return;
+    bar.querySelectorAll("[data-ptype]").forEach(function (b) {
+      var on = b.getAttribute("data-ptype") === draftType;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
+  }
+
+  function renderPickerTypeBar() {
+    var bar = document.getElementById("pickerResType");
+    bar.innerHTML = NavV2.RESOURCE_TYPES.map(function (r) {
+      return (
+        '<button type="button" role="tab" data-ptype="' +
+        r.id +
+        '"' +
+        (draftType === r.id ? ' class="on" aria-selected="true"' : ' aria-selected="false"') +
+        ">" +
+        escapeHtml(r.label) +
+        "</button>"
+      );
+    }).join("");
+    bar.querySelectorAll("[data-ptype]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        switchPickerType(b.getAttribute("data-ptype"));
+      });
+    });
+  }
+
+  function switchPickerType(next) {
+    if (!next || next === draftType) return;
+    var edit = addModal._editId ? findItem(addModal._editId) : null;
+
+    if (next === "custom") {
+      if (edit) {
+        edit.resourceType = "custom";
+        edit.resourceId = null;
+        edit.imageMode = "none";
+        if (!edit.link) edit.link = "/";
+        persist();
+      }
+      draftType = "custom";
+      pickerSelected = {};
+      pickerExpanded = {};
+      closeAdd(true);
+      renderTree();
+      NavV2.toast("<strong>Custom URL</strong>Edit the link in the side panel");
+      return;
+    }
+
+    draftType = next;
+    pickerSelected = {};
+    pickerExpanded = {};
+    document.getElementById("pickerSearch").value = "";
+    if (edit) {
+      edit.resourceType = next;
+      // Keep old resourceId until Apply so Cancel can restore; clear if type mismatch
+      var cat = edit.resourceId ? NavV2.byId(edit.resourceId) : null;
+      if (cat && cat.type !== next) {
+        edit.resourceId = null;
+        edit.link = edit.link || "/";
+      }
+      persist();
+      var sel = document.getElementById("fResType");
+      if (sel) sel.value = next;
+    }
+    syncPickerChrome();
+    document.getElementById("drill").hidden = false;
+    document.getElementById("addNext").disabled = false;
+    renderPicker();
+  }
+
+  function openResourcePicker(opts) {
+    opts = opts || {};
+    draftType = opts.forceType || "collection";
+    if (draftType === "custom") return;
+    pickerExpanded = {};
+    pickerSelected = {};
+    addModal._parentId = opts.parentId || null;
+    addModal._editId = opts.editId || null;
+    addModal._openedType = draftType;
+    document.getElementById("pickerSearch").value = "";
+    document.getElementById("drill").hidden = false;
+    document.getElementById("addNext").disabled = false;
+    renderPickerTypeBar();
+    syncPickerChrome();
+    addModal.classList.add("open");
+    addModal.setAttribute("aria-hidden", "false");
+    renderPicker();
+  }
+
+  function closeAdd(skipRevert) {
+    if (!skipRevert) {
+      var edit = addModal._editId ? findItem(addModal._editId) : null;
+      if (edit) {
+        var cat = edit.resourceId ? NavV2.byId(edit.resourceId) : null;
+        if (cat && cat.type !== edit.resourceType) {
+          edit.resourceType = cat.type;
+          persist();
+          renderTree();
+        } else if (!edit.resourceId && edit.resourceType !== "custom") {
+          // Revert to type we opened with if still unlinked
+          var opened = addModal._openedType || "custom";
+          if (opened === "custom" || !opened) {
+            edit.resourceType = "custom";
+            edit.link = edit.link || "/";
+          } else {
+            edit.resourceType = opened;
+          }
+          persist();
+          renderTree();
+        }
+      }
+    }
+    addModal.classList.remove("open");
+    addModal.setAttribute("aria-hidden", "true");
+  }
+
+  function pickerQuery() {
+    return (document.getElementById("pickerSearch").value || "").toLowerCase().trim();
+  }
+
+  function pickerSortId() {
+    return document.getElementById("pickerSort").value || state.globalSort;
+  }
+
+  /** Flat visible rows for nested tree: indent + L# + expand */
+  function buildPickerRows() {
+    var type = draftType;
+    var sort = pickerSortId();
+    var q = pickerQuery();
+    var cap = state.displayCap;
+    var rows = [];
+    var matchIds = {};
+
+    if (q) {
+      NavV2.CATALOG.forEach(function (n) {
+        if (n.type === type && n.name.toLowerCase().indexOf(q) >= 0) {
+          matchIds[n.id] = true;
+          NavV2.pathOf(n.id).forEach(function (p) {
+            matchIds[p.id] = true;
+            if (p.parent) pickerExpanded[p.parent] = true;
+          });
+        }
+      });
+    }
+
+    function walk(parentId, depth) {
+      if (depth > state.maxDepth) return;
+      var kids = NavV2.sortNodes(
+        parentId ? NavV2.childrenOf(parentId, type) : NavV2.rootsOf(type),
+        sort
+      );
+      if (q) {
+        kids = kids.filter(function (n) {
+          return matchIds[n.id];
+        });
+      }
+      var visible = kids.slice(0, cap);
+      var hidden = kids.length - visible.length;
+      visible.forEach(function (n) {
+        var childCount = NavV2.childrenOf(n.id, type).length;
+        var hasKids = childCount > 0 && depth < state.maxDepth;
+        var expanded = !!pickerExpanded[n.id] || (!!q && hasKids);
+        rows.push({
+          node: n,
+          depth: depth,
+          hasKids: hasKids,
+          expanded: expanded,
+          childCount: childCount
+        });
+        if (hasKids && expanded) walk(n.id, depth + 1);
+      });
+      if (hidden > 0) {
+        rows.push({
+          more: true,
+          depth: depth,
+          hidden: hidden,
+          parentId: parentId
+        });
+      }
+    }
+
+    walk(null, 1);
+    return rows;
+  }
+
+  function renderPicker() {
+    var list = document.getElementById("drillList");
+    var rows = buildPickerRows();
+    if (!rows.length) {
+      list.innerHTML =
+        '<div class="drill-empty">' +
+        (pickerQuery() ? "No matches for that search" : "No resources of this type") +
+        "</div>";
+      renderChips();
+      return;
+    }
+
+    list.innerHTML = rows
+      .map(function (row) {
+        if (row.more) {
+          return (
+            '<div class="drill-row nest-more nest-d' +
+            row.depth +
+            '" style="--nest:' +
+            (row.depth - 1) +
+            '">' +
+            '<span class="nest-indent"></span>' +
+            '<span class="nest-more-label">+' +
+            row.hidden +
+            " more at this level (display cap " +
+            state.displayCap +
+            ")</span></div>"
+          );
+        }
+        var n = row.node;
+        var checked = pickerSelected[n.id] ? " checked" : "";
+        var pathMeta =
+          row.depth > 1
+            ? NavV2.pathOf(n.id)
+                .slice(0, -1)
+                .map(function (p) {
+                  return p.name;
+                })
+                .join(" → ")
+            : "";
+        return (
+          '<div class="drill-row nest-row nest-d' +
+          row.depth +
+          (checked ? " is-picked" : "") +
+          '" style="--nest:' +
+          (row.depth - 1) +
+          '" role="treeitem" aria-level="' +
+          row.depth +
+          '" aria-expanded="' +
+          (row.hasKids ? (row.expanded ? "true" : "false") : "undefined") +
+          '">' +
+          '<span class="nest-indent">' +
+          (row.hasKids
+            ? '<button type="button" class="nest-toggle' +
+              (row.expanded ? " open" : "") +
+              '" data-toggle="' +
+              escapeHtml(n.id) +
+              '" aria-label="' +
+              (row.expanded ? "Collapse" : "Expand") +
+              '"><i class="mdi mdi-chevron-right"></i></button>'
+            : '<span class="nest-toggle-spacer"></span>') +
+          "</span>" +
+          '<input type="checkbox" class="nest-check" data-pick="' +
+          escapeHtml(n.id) +
+          '"' +
+          checked +
+          " />" +
+          '<div class="grow">' +
+          '<div class="nest-name">' +
+          escapeHtml(n.name) +
+          "</div>" +
+          (pathMeta ? '<div class="nest-path">' + escapeHtml(pathMeta) + "</div>" : "") +
+          "</div>" +
+          '<span class="pch-kids">' +
+          (row.hasKids || row.childCount
+            ? '<span class="nest-kids" title="' +
+              row.childCount +
+              ' nested children">' +
+              row.childCount +
+              "</span>"
+            : '<span class="col-na">—</span>') +
+          "</span>" +
+          '<span class="pch-level"><span class="depth-chip l' +
+          row.depth +
+          '" title="Level ' +
+          row.depth +
+          '">L' +
+          row.depth +
+          "</span></span></div>"
+        );
+      })
+      .join("");
+
+    list.querySelectorAll("[data-pick]").forEach(function (cb) {
+      cb.addEventListener("change", function () {
+        var id = cb.getAttribute("data-pick");
+        if (cb.checked) pickerSelected[id] = true;
+        else delete pickerSelected[id];
+        renderPicker();
+      });
+    });
+    list.querySelectorAll("[data-toggle]").forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var id = b.getAttribute("data-toggle");
+        if (pickerExpanded[id]) delete pickerExpanded[id];
+        else pickerExpanded[id] = true;
+        renderPicker();
+      });
+    });
+    list.querySelectorAll(".nest-row").forEach(function (row) {
+      row.addEventListener("click", function (e) {
+        if (e.target.closest("input,button")) return;
+        var cb = row.querySelector("[data-pick]");
+        if (!cb) return;
+        cb.checked = !cb.checked;
+        cb.dispatchEvent(new Event("change"));
+      });
+    });
+    renderChips();
+  }
+
+  function expandAllPicker() {
+    var type = draftType;
+    NavV2.CATALOG.forEach(function (n) {
+      if (n.type === type && NavV2.childrenOf(n.id, type).length) {
+        pickerExpanded[n.id] = true;
+      }
+    });
+    renderPicker();
+  }
+
+  function renderChips() {
+    var el = document.getElementById("selectedChips");
+    var ids = Object.keys(pickerSelected);
+    if (!ids.length) {
+      el.innerHTML = "";
+      return;
+    }
+    el.innerHTML =
+      '<p class="chips-hint">Selected will nest in the menu when a parent is also selected</p>' +
+      ids
+        .map(function (id) {
+          var c = NavV2.byId(id);
+          if (!c) return "";
+          var under = null;
+          var path = NavV2.pathOf(id);
+          for (var i = path.length - 2; i >= 0; i--) {
+            if (pickerSelected[path[i].id]) {
+              under = path[i].name;
+              break;
+            }
+          }
+          return (
+            '<span class="chip' +
+            (under ? " chip-child" : "") +
+            '">' +
+            escapeHtml(c.name) +
+            (under ? '<span class="chip-under">under ' + escapeHtml(under) + "</span>" : "") +
+            '<button type="button" data-x="' +
+            escapeHtml(id) +
+            '" aria-label="Remove">×</button></span>'
+          );
+        })
+        .join("");
+    el.querySelectorAll("[data-x]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        delete pickerSelected[b.getAttribute("data-x")];
+        renderPicker();
+      });
+    });
+  }
+
+  /**
+   * Apply picker selection into the menu tree.
+   * Catalog parent→child among selected IDs becomes menu nesting
+   * (e.g. Furniture + Sofas → Sofas under Furniture as L2).
+   */
+  function commitPicker() {
+    var insertParentId = addModal._parentId || null;
+    var insertParent = insertParentId ? findItem(insertParentId) : null;
+    var insertDepth = insertParent ? (insertParent.depth || 1) + 1 : 1;
+    var edit = addModal._editId ? findItem(addModal._editId) : null;
+    if (edit) {
+      insertDepth = edit.depth || 1;
+      insertParentId = edit.parentId || null;
+    }
+    if (insertDepth > state.maxDepth) {
+      NavV2.toast("<strong>Max depth</strong>Cannot nest past L" + state.maxDepth);
+      return;
+    }
+
+    var ids = Object.keys(pickerSelected);
+    if (!ids.length) {
+      NavV2.toast("<strong>Select a resource</strong>Use checkboxes in the list");
+      return;
+    }
+
+    // Parents before children (shallower catalog path first)
+    ids.sort(function (a, b) {
+      return NavV2.pathOf(a).length - NavV2.pathOf(b).length;
+    });
+
+    var resourceToMenuId = {};
+    var created = 0;
+    var nested = 0;
+    var skippedDepth = 0;
+    var rootsAssigned = 0;
+
+    ids.forEach(function (rid) {
+      var cat = NavV2.byId(rid);
+      if (!cat) return;
+
+      var menuParentId = insertParentId;
+      var depth = insertDepth;
+      var path = NavV2.pathOf(rid);
+      // Nearest selected catalog ancestor → nest under that menu item
+      for (var i = path.length - 2; i >= 0; i--) {
+        var anc = path[i];
+        if (pickerSelected[anc.id] && resourceToMenuId[anc.id]) {
+          menuParentId = resourceToMenuId[anc.id];
+          var parentItem = findItem(menuParentId);
+          depth = (parentItem ? parentItem.depth || 1 : insertDepth) + 1;
+          nested++;
+          break;
+        }
+      }
+
+      if (depth > state.maxDepth) {
+        skippedDepth++;
+        return;
+      }
+
+      var patch = {
+        label: cat.name,
+        resourceType: cat.type,
+        resourceId: cat.id,
+        link: NavV2.resourcePath(cat),
+        depth: depth,
+        parentId: menuParentId,
+        imageMode: cat.type === "collection" ? "collection" : "none",
+        includeChildren: false,
+        childIds: [],
+        status: "ok"
+      };
+
+      var isRootOfSelection = menuParentId === insertParentId;
+      if (edit && isRootOfSelection && rootsAssigned === 0) {
+        Object.assign(edit, patch);
+        resourceToMenuId[rid] = edit.id;
+        state.selectedId = edit.id;
+        rootsAssigned++;
+      } else {
+        var nid = NavV2.uid("mi");
+        state.items.push(
+          Object.assign(
+            {
+              id: nid,
+              hidden: false
+            },
+            patch
+          )
+        );
+        resourceToMenuId[rid] = nid;
+        if (!edit && isRootOfSelection && rootsAssigned === 0) {
+          state.selectedId = nid;
+          rootsAssigned++;
+        }
+        created++;
+      }
+    });
+
+    if (skippedDepth) {
+      NavV2.toast(
+        "<strong>Max depth</strong>" +
+          skippedDepth +
+          " item(s) skipped — nesting capped at L" +
+          state.maxDepth
+      );
+    }
+
+    persist();
+    closeAdd();
+    renderTree();
+    var msg =
+      nested > 0
+        ? "Added with nesting · " + nested + " child item(s) under selected parents"
+        : edit
+          ? "Resource updated"
+          : created + " item(s) added";
+    NavV2.toast("<strong>Linked</strong>" + msg);
+  }
+
+  function openPreview() {
+    var items = sortedTree().filter(function (i) {
+      return !i.hidden;
+    });
+    var roots = items.filter(function (i) {
+      return !i.parentId;
+    });
+    var html = roots
+      .map(function (r) {
+        var kids = items.filter(function (i) {
+          return i.parentId === r.id;
+        });
+        return (
+          "<div><b>" +
+          escapeHtml(r.label) +
+          "</b>" +
+          (kids.length
+            ? "<ul>" +
+              kids
+                .map(function (k) {
+                  return "<li>" + escapeHtml(k.label) + "</li>";
+                })
+                .join("") +
+              "</ul>"
+            : "") +
+          "</div>"
+        );
+      })
+      .join("");
+    document.getElementById("storefront").innerHTML =
+      html || "<p style='padding:16px;color:#666'>Empty menu</p>";
+    document.getElementById("previewModal").classList.add("open");
+  }
+
+  /* events */
+  document.getElementById("btnAdd").addEventListener("click", function () {
+    addNewItem();
+  });
+
+  document.getElementById("addClose").addEventListener("click", closeAdd);
+  document.getElementById("addCancel").addEventListener("click", closeAdd);
+  document.getElementById("addNext").addEventListener("click", commitPicker);
+  document.getElementById("pickerSort").addEventListener("change", renderPicker);
+  document.getElementById("pickerSearch").addEventListener("input", renderPicker);
+  document.getElementById("pickerExpandAll").addEventListener("click", expandAllPicker);
+
+  globalSort.addEventListener("change", function () {
+    state.globalSort = this.value;
+    document.getElementById("pickerSort").value = this.value === "manual" ? "az" : this.value;
+    persist();
+    renderTree();
+    NavV2.toast(
+      "<strong>Menu sort</strong>" +
+        this.options[this.selectedIndex].text +
+        (this.value === "manual" ? " · drag rows to reorder" : " · applied to all levels")
+    );
+  });
+
+  menuNameEl.addEventListener("input", persist);
+  document.getElementById("btnCancel").addEventListener("click", function () {
+    if (state.dirty && !confirm("Discard unsaved changes?")) return;
+    location.href = "01-navigations.html";
+  });
+  document.getElementById("btnSave").addEventListener("click", function () {
+    state.dirty = false;
+    NavV2.save(state);
+    document.getElementById("dirtyPill").hidden = true;
+    NavV2.toast("<strong>Saved</strong>" + escapeHtml(state.menuName) + " · draft only in this proto");
+  });
+  document.getElementById("btnPreview").addEventListener("click", openPreview);
+  document.getElementById("previewClose").addEventListener("click", function () {
+    document.getElementById("previewModal").classList.remove("open");
+  });
+  document.querySelectorAll(".device-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll(".device-toggle button").forEach(function (x) {
+        x.classList.remove("on");
+      });
+      b.classList.add("on");
+      var sf = document.getElementById("storefront");
+      sf.classList.toggle("desktop", b.getAttribute("data-device") === "desktop");
+      sf.classList.toggle("mobile", b.getAttribute("data-device") === "mobile");
+    });
+  });
+
+  document.getElementById("bulkHide").addEventListener("click", function () {
+    Object.keys(state.checked).forEach(function (id) {
+      var it = findItem(id);
+      if (it) it.hidden = true;
+    });
+    persist();
+    renderTree();
+  });
+  document.getElementById("bulkShow").addEventListener("click", function () {
+    Object.keys(state.checked).forEach(function (id) {
+      var it = findItem(id);
+      if (it) it.hidden = false;
+    });
+    persist();
+    renderTree();
+  });
+  document.getElementById("bulkRemove").addEventListener("click", function () {
+    removeItems(Object.keys(state.checked));
+  });
+  document.getElementById("bulkClear").addEventListener("click", function () {
+    state.checked = {};
+    persist();
+    updateBulk();
+    renderTree();
+  });
+
+  document.getElementById("protoReset").addEventListener("click", function () {
+    if (!confirm("Reset v2 prototype state?")) return;
+    state = NavV2.reset();
+    menuNameEl.value = state.menuName;
+    globalSort.value = state.globalSort;
+    renderTree();
+  });
+
+  renderTree();
+})();
+</script>
+</body>
+</html>
