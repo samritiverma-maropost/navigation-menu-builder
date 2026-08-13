@@ -458,12 +458,32 @@
     });
   }
 
+  function countVisibleDesc(node) {
+    let n = 0;
+    function vis(nodes) {
+      (nodes || []).forEach((c) => {
+        if (c.hidden) return;
+        n += 1;
+        vis(c.children);
+      });
+    }
+    vis(node && node.children);
+    return n;
+  }
+
   function chipPreview(items, cap) {
-    const names = (items || []).filter((n) => !n.hidden).map((n) => n.name);
-    const limit = cap == null ? 5 : cap;
-    if (!names.length) return { chips: ["—"], more: 0 };
-    if (names.length <= limit) return { chips: names, more: 0 };
-    return { chips: names.slice(0, limit), more: names.length - limit };
+    const roots = (items || []).filter((n) => !n.hidden);
+    const chips = roots.map((n) => ({ name: n.name, count: countVisibleDesc(n) }));
+    const limit = cap == null ? 4 : cap;
+    if (!chips.length) return { chips: [{ name: "—", count: 0 }], more: 0 };
+    if (chips.length <= limit) return { chips, more: 0 };
+    return { chips: chips.slice(0, limit), more: chips.length - limit };
+  }
+
+  function chipHtml(chip, inactive) {
+    const name = chip && typeof chip === "object" ? chip.name : chip;
+    const count = chip && typeof chip === "object" ? (chip.count || 0) : 0;
+    return `<span class="rp-chip ${inactive ? "muted" : ""}">${esc(name)}${count ? `<span class="rp-chip-badge" title="${count} nested items">${count}</span>` : ""}</span>`;
   }
 
   function furnitureTree() {
@@ -751,7 +771,7 @@
           </td>
           <td>
             <div style="display:flex;flex-wrap:wrap;align-items:center">
-              ${m.chips.map((t) => `<span class="rp-chip ${inactive ? "muted" : ""}">${esc(t)}</span>`).join("")}
+              ${m.chips.map((t) => chipHtml(t, inactive)).join("")}
               ${m.more ? `<button type="button" class="rp-more" data-act="noop">+${m.more} more</button>` : ""}
             </div>
           </td>

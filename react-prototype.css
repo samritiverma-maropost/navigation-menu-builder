@@ -194,17 +194,26 @@ body {
 }
 .rp-menu-name:hover { text-decoration: underline; }
 .rp-chip {
-  display: inline-flex; align-items: center; height: 32px; padding: 6px 8px; margin-right: 4px;
-  border-radius: 16px; background: var(--ls-chip); font-size: 14px; letter-spacing: 0.25px; line-height: 20px;
+  display: inline-flex; align-items: center; gap: 6px; height: 32px;
+  padding: 4px 8px 4px 10px; margin-right: 4px;
+  border-radius: 16px; background: var(--ls-chip);
+  font-size: 14px; letter-spacing: 0.25px; line-height: 20px; color: var(--ls-high);
 }
 .rp-chip.muted { color: var(--ls-mute); }
-.rp-more { color: var(--ls-high); font-size: 14px; background: none; border: 0; cursor: pointer; padding: 0; letter-spacing: 0.25px; }
+.rp-chip-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; background: #535963; color: #fff;
+  font-size: 11px; font-weight: 500; line-height: 18px; letter-spacing: 0;
+}
+.rp-chip.muted .rp-chip-badge { background: #9aa0a8; }
+.rp-more { color: #006baf; font-size: 14px; background: none; border: 0; cursor: pointer; padding: 0 4px; letter-spacing: 0.25px; }
 .rp-more:hover { text-decoration: underline; }
 .rp-status {
   display: inline-flex; align-items: center; height: auto; padding: 3px 8px;
   border-radius: 10px; font-size: 12px; letter-spacing: 0.04px; background: transparent; line-height: 1;
 }
-.rp-status.ok { border: 1px solid #41ce65; color: var(--ls-ok); }
+.rp-status.ok { border: 1px solid #41ce65; color: var(--ls-ok); background: #bcecc8; }
 .rp-status.err { border: 1px solid var(--ls-err); color: var(--ls-err); }
 .rp-table tbody tr.is-inactive { background: #fafafa; }
 .rp-table tbody tr.is-inactive:hover { background: #f0f0f0; }
