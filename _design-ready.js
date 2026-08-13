@@ -480,6 +480,15 @@
     return { chips: chips.slice(0, limit), more: chips.length - limit };
   }
 
+  function visChipCap(rowCap) {
+    const w = window.innerWidth || 1440;
+    let max = rowCap == null ? 4 : rowCap;
+    if (w < 480) max = Math.min(max, 1);
+    else if (w < 640) max = Math.min(max, 2);
+    else if (w < 900) max = Math.min(max, 3);
+    return max;
+  }
+
   function chipHtml(chip, inactive) {
     const name = chip && typeof chip === "object" ? chip.name : chip;
     const count = chip && typeof chip === "object" ? (chip.count || 0) : 0;
@@ -766,33 +775,33 @@
           <input placeholder="Search" />
         </div>
         <div class="rp-abar-right">
-          <div style="position:relative">
+          <div style="position:relative" class="rp-hdr-new">
             <button type="button" class="rp-text-btn" data-act="hdr" data-id="new" style="text-transform:none;letter-spacing:1.2px;font-weight:500;color:rgba(0,0,0,.87)">
-              <i class="mdi mdi-lightbulb-on-outline" style="font-size:18px;vertical-align:middle"></i> What’s New?
+              <i class="mdi mdi-lightbulb-on-outline" style="font-size:18px;vertical-align:middle"></i> <span class="rp-hdr-label">What’s New?</span>
             </button>
             ${open === "new" ? `<div class="rp-menu" style="right:0;top:44px;min-width:220px">
               <button type="button">Product updates</button>
               <button type="button">Release notes</button>
             </div>` : ""}
           </div>
-          <div style="position:relative">
+          <div style="position:relative" class="rp-hdr-acct">
             <button type="button" class="rp-text-btn" data-act="hdr" data-id="acct">
-              <i class="mdi mdi-domain" style="font-size:18px;vertical-align:middle"></i> Account name is...
-              <i class="mdi mdi-chevron-down"></i>
+              <i class="mdi mdi-domain" style="font-size:18px;vertical-align:middle"></i> <span class="rp-hdr-label">Account name is...</span>
+              <i class="mdi mdi-chevron-down rp-hdr-label"></i>
             </button>
             ${open === "acct" ? `<div class="rp-menu" style="right:0;top:44px">
               <button type="button">Account 2000293</button>
               <button type="button">Switch account</button>
             </div>` : ""}
           </div>
-          <button class="rp-icon-btn" type="button" aria-label="Da Vinci"><i class="mdi mdi-creation"></i></button>
-          <button class="rp-icon-btn" type="button" aria-label="Help"><i class="mdi mdi-book-open-variant"></i></button>
+          <button class="rp-icon-btn rp-icon-extra" type="button" aria-label="Da Vinci"><i class="mdi mdi-creation"></i></button>
+          <button class="rp-icon-btn rp-icon-extra" type="button" aria-label="Help"><i class="mdi mdi-book-open-variant"></i></button>
           <button class="rp-icon-btn" type="button" aria-label="Settings"><i class="mdi mdi-cog-outline"></i></button>
           <div style="position:relative">
             <button type="button" class="rp-profile" data-act="hdr" data-id="prof">
               <span class="rp-avatar"><i class="mdi mdi-account-outline"></i></span>
-              Acme Corp India...
-              <i class="mdi mdi-chevron-down" style="font-size:18px"></i>
+              <span class="rp-hdr-label">Acme Corp India...</span>
+              <i class="mdi mdi-chevron-down rp-hdr-label" style="font-size:18px"></i>
             </button>
             ${open === "prof" ? `<div class="rp-menu" style="right:0;top:56px">
               <button type="button">Profile</button>
@@ -829,22 +838,23 @@
     const rows = state.menus.map((m) => {
       const inactive = m.status === "Inactive";
       const selected = state.hoverId === m.id;
+      const prev = chipPreview(m.items, visChipCap(m.chipCap));
       return `
         <tr class="${selected ? "is-selected is-hover" : ""} ${inactive ? "is-inactive" : ""}"
             data-menu-id="${m.id}">
-          <td class="${inactive ? "rp-name-muted" : ""}">
+          <td class="rp-td-name ${inactive ? "rp-name-muted" : ""}">
             <button type="button" class="rp-menu-name" data-act="open-menu" data-id="${m.id}">${esc(m.name)}</button>
           </td>
-          <td>
+          <td class="rp-td-items">
             <div class="rp-chips">
-              ${m.chips.map((t) => chipHtml(t, inactive)).join("")}
-              ${m.more ? `<button type="button" class="rp-more" data-act="noop">+${m.more} more</button>` : ""}
+              ${prev.chips.map((t) => chipHtml(t, inactive)).join("")}
+              ${prev.more ? `<button type="button" class="rp-more" data-act="noop">+${prev.more} more</button>` : ""}
             </div>
           </td>
-          <td style="text-align:center">
+          <td class="rp-td-status">
             <span class="rp-status ${m.status === "Active" ? "ok" : "err"}">${m.status}</span>
           </td>
-          <td style="text-align:right;position:relative">
+          <td class="rp-td-act">
             <button type="button" class="rp-kebab ${state.listKebab === m.id || selected ? "on" : ""}"
               aria-label="Actions" data-act="list-kebab" data-id="${m.id}">
               <i class="mdi mdi-dots-vertical"></i>
@@ -1528,7 +1538,7 @@
       <div class="rp-bulk ${state.bulkMode === 2 ? "idea2" : ""}">
         <span style="font-size:14px;font-weight:500">${d.checked.length} selected</span>
         ${state.bulkMode === 2 ? `<button type="button" class="rp-select-all" data-act="select-all">Select all (100)</button>` : ""}
-        <div style="margin-left:auto;display:flex;gap:8px">
+        <div class="rp-bulk-acts">
           <button type="button" class="rp-btn ghost" data-act="bulk" data-t="hide">Hide</button>
           <button type="button" class="rp-btn ghost" data-act="bulk" data-t="remove">Remove</button>
           <button type="button" class="rp-btn ghost" data-act="bulk" data-t="clear">Clear</button>
@@ -1538,12 +1548,12 @@
     const inner = `
       <div class="rp-editor-head">
         <h1>Create new Navigation</h1>
-        <div style="width:280px">${field("Menu Name", d.menuName, "menu-name", { id: "fld-menu", error: d.nameError })}</div>
-        <div style="display:flex;align-items:center;gap:8px;padding-bottom:12px">
-          <span style="font-size:14px">${d.active ? "Active" : "Inactive"}</span>
+        <div class="rp-menu-name-field">${field("Menu Name", d.menuName, "menu-name", { id: "fld-menu", error: d.nameError })}</div>
+        <div class="rp-active-toggle">
+          <span>${d.active ? "Active" : "Inactive"}</span>
           ${switchHtml(d.active, "toggle-active")}
         </div>
-        <div class="ml-auto" style="display:flex;gap:8px;padding-bottom:8px;margin-left:auto">
+        <div class="rp-editor-actions ml-auto">
           <button type="button" class="rp-btn" data-act="preview"><i class="mdi mdi-eye-outline" style="font-size:16px"></i> Preview</button>
           <button type="button" class="rp-btn" data-act="cancel">Cancel</button>
           <button type="button" class="rp-btn primary" data-act="save">Save</button>
@@ -1554,7 +1564,7 @@
           <div class="rp-tree-bar">
             <h2>Menu structure</h2>
             <div style="position:relative">
-              <button type="button" class="rp-select-btn" style="position:static;height:40px;width:auto;min-width:140px;padding:0 12px" data-act="toggle-sort">
+              <button type="button" class="rp-select-btn rp-sort-btn" data-act="toggle-sort">
                 ${esc(d.sort)} <i class="mdi mdi-chevron-down"></i>
               </button>
               ${state.sortOpen ? `<div class="rp-menu" style="min-width:160px">
@@ -2051,6 +2061,14 @@
   });
   document.getElementById("app").addEventListener("input", onInput);
   document.getElementById("app").addEventListener("change", onChange);
+
+  let resizeT;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeT);
+    resizeT = setTimeout(function () {
+      if (state.view === "listing") render();
+    }, 160);
+  });
 
   seedFlow(startFlow);
   render();
