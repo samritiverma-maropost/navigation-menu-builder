@@ -495,6 +495,8 @@
     picker: null,
     pickerByType: {},
     preview: false,
+    previewMode: "desktop",
+    previewOpenId: null,
     toast: "",
     alert: null,
     bulkMode: 1,
@@ -511,6 +513,8 @@
     state.pickerByType = {};
     state.alert = null;
     state.preview = false;
+    state.previewMode = "desktop";
+    state.previewOpenId = null;
     state.listKebab = null;
     state.headerOpen = null;
     nid = 40;
@@ -1294,6 +1298,95 @@
     `;
   }
 
+  function visibleItems(nodes) {
+    return (nodes || []).filter((n) => !n.hidden);
+  }
+
+  function previewHtml() {
+    if (!state.preview) return "";
+    const l1s = visibleItems(state.draft.items);
+    const open = findNode(state.draft.items, state.previewOpenId)
+      || l1s.find((n) => visibleItems(n.children).length)
+      || l1s[0]
+      || null;
+    const openId = open ? open.id : null;
+    const l2s = open ? visibleItems(open.children) : [];
+    const feature = l1s.find((n) => n.id !== openId) || open;
+    const desktop = state.previewMode !== "mobile";
+
+    const navLinks = l1s.map((n) => `
+      <button type="button" class="sf-nav-link${n.id === openId ? " on" : ""}" data-act="preview-open" data-id="${n.id}">${esc(n.name)}</button>
+    `).join("");
+
+    const megaCols = l2s.map((l2) => {
+      const l3 = visibleItems(l2.children);
+      return `<div class="sf-col">
+        <div class="sf-l2">${esc(l2.name)}</div>
+        ${l3.map((c) => `<div class="sf-l3">${esc(c.name)}</div>`).join("")}
+      </div>`;
+    }).join("");
+
+    const mega = (desktop && open && l2s.length) ? `
+      <div class="sf-mega">
+        <div class="sf-mega-main">
+          <div class="sf-kicker">${esc(open.name)}</div>
+          <div class="sf-cols">${megaCols}</div>
+        </div>
+        ${feature ? `<div class="sf-feature">
+          <div class="sf-feature-img"></div>
+          <div class="sf-feature-cap"><span>${esc(feature.name)} · </span><span>collection</span></div>
+        </div>` : ""}
+      </div>` : "";
+
+    const desktopBody = `
+      <div class="sf-desktop">
+        <div class="sf-bar">
+          <div class="sf-brand">Maropost</div>
+          <nav class="sf-nav">${navLinks || `<span class="sf-muted">Empty menu</span>`}</nav>
+          <div class="sf-util">Bag · Account</div>
+        </div>
+        ${mega}
+      </div>`;
+
+    const mobileBody = `
+      <div class="sf-mobile">
+        <div class="sf-mobile-head">
+          <b>Maropost</b>
+          <span>Bag · Account</span>
+        </div>
+        <div class="sf-mobile-list">
+          ${l1s.map((n) => {
+            const kids = visibleItems(n.children);
+            const isOn = n.id === openId;
+            return `<div class="sf-m-item">
+              <button type="button" class="sf-m-l1${isOn ? " on" : ""}" data-act="preview-open" data-id="${n.id}">${esc(n.name)}</button>
+              ${isOn && kids.length ? kids.map((l2) => `
+                <div class="sf-m-l2">${esc(l2.name)}</div>
+                ${visibleItems(l2.children).map((c) => `<div class="sf-m-l3">${esc(c.name)}</div>`).join("")}
+              `).join("") : ""}
+            </div>`;
+          }).join("") || `<p class="sf-muted">No visible items</p>`}
+        </div>
+      </div>`;
+
+    return `
+      <div class="rp-modal sf-overlay" data-act="close-preview">
+        <div class="sf-modal" data-act="noop">
+          <div class="sf-modal-head">
+            <h2>Storefront preview</h2>
+            <div class="sf-head-right">
+              <div class="sf-seg">
+                <button type="button" class="${desktop ? "on" : ""}" data-act="preview-mode" data-t="desktop">Desktop</button>
+                <button type="button" class="${desktop ? "" : "on"}" data-act="preview-mode" data-t="mobile">Mobile</button>
+              </div>
+              <button type="button" class="sf-close" data-act="close-preview" aria-label="Close"><i class="mdi mdi-close"></i></button>
+            </div>
+          </div>
+          <div class="sf-modal-body">${desktop ? desktopBody : mobileBody}</div>
+        </div>
+      </div>`;
+  }
+
   function editorView() {
     const d = state.draft;
     const sel = findNode(d.items, d.selectedId);
@@ -1368,23 +1461,7 @@
         </section>
         <aside class="rp-details">${detailsHtml(sel)}</aside>
       </div>
-      ${state.preview ? `
-        <div class="rp-modal" data-act="close-preview">
-          <div class="rp-modal-card" style="padding:0;overflow:hidden">
-            <div class="rp-preview-nav">
-              ${flatten(d.items).filter((x) => x.depth === 1 && !x.n.hidden).map((x) => `<span>${esc(x.n.name)}</span>`).join("") || "<span>Empty menu</span>"}
-            </div>
-            <div style="padding:16px 20px">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                <h3 style="margin:0;font-size:16px;font-weight:500">Theme preview</h3>
-                <button type="button" data-act="close-preview" aria-label="Close" style="border:0;background:none;cursor:pointer"><i class="mdi mdi-close"></i></button>
-              </div>
-              <ul style="margin:0;padding:0;list-style:none">
-                ${flatten(d.items).filter((x) => !x.n.hidden).map((x) => `<li style="padding:6px 0 6px ${(x.depth - 1) * 16}px;font-size:14px">${esc(x.n.name)}</li>`).join("")}
-              </ul>
-            </div>
-          </div>
-        </div>` : ""}
+      ${previewHtml()}
     `;
     return shell(inner, "Create New");
   }
@@ -1783,7 +1860,22 @@
       if (now) patchSelected({ savedTypes: rememberType(now) });
       render(); return;
     }
-    if (act === "preview") { state.preview = true; render(); return; }
+    if (act === "preview") {
+      const l1s = visibleItems(state.draft.items);
+      const withKids = l1s.find((n) => visibleItems(n.children).length);
+      state.preview = true;
+      state.previewMode = "desktop";
+      state.previewOpenId = withKids ? withKids.id : (l1s[0] ? l1s[0].id : null);
+      render(); return;
+    }
+    if (act === "preview-mode") {
+      state.previewMode = t.getAttribute("data-t") || "desktop";
+      render(); return;
+    }
+    if (act === "preview-open") {
+      state.previewOpenId = id;
+      render(); return;
+    }
     if (act === "close-preview") { state.preview = false; render(); return; }
     if (act === "save") { saveMenu(); return; }
   }
