@@ -177,10 +177,22 @@ body {
   height: 60px; padding: 0 32px; font-size: 16px; letter-spacing: 0.5px;
   border-bottom: 1px solid var(--ls-div); vertical-align: middle;
 }
-.rp-table tbody tr { cursor: pointer; }
+.rp-table tbody tr { cursor: default; }
 .rp-table tbody tr:hover, .rp-table tbody tr.is-hover { background: var(--ls-hover); }
 .rp-table tbody tr.is-selected { background: var(--ls-sel); }
 .rp-name-muted { color: var(--ls-mute); }
+.rp-menu-name {
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.rp-menu-name:hover { text-decoration: underline; }
 .rp-chip {
   display: inline-flex; align-items: center; height: 32px; padding: 6px 8px; margin-right: 4px;
   border-radius: 16px; background: var(--ls-chip); font-size: 14px; letter-spacing: 0.25px; line-height: 20px;

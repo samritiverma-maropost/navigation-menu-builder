@@ -434,6 +434,38 @@
     });
   }
 
+  function l1Items(names) {
+    return names.map((name) => item({
+      name,
+      resourceType: "Custom URL",
+      linkTo: "/" + String(name).replace(/\s+/g, "-"),
+      imageSource: "None",
+    }));
+  }
+
+  function cloneItems(nodes) {
+    return (nodes || []).map((n) => ({
+      ...n,
+      savedTypes: n.savedTypes ? Object.assign({}, n.savedTypes) : {},
+      children: cloneItems(n.children),
+    }));
+  }
+
+  function bumpNid(nodes) {
+    walk(nodes, (n) => {
+      const num = parseInt(String(n.id).replace(/\D/g, ""), 10);
+      if (!isNaN(num) && num >= nid) nid = num + 1;
+    });
+  }
+
+  function chipPreview(items, cap) {
+    const names = (items || []).filter((n) => !n.hidden).map((n) => n.name);
+    const limit = cap == null ? 5 : cap;
+    if (!names.length) return { chips: ["—"], more: 0 };
+    if (names.length <= limit) return { chips: names, more: 0 };
+    return { chips: names.slice(0, limit), more: names.length - limit };
+  }
+
   function furnitureTree() {
     const seats = item({ name: "Seats", resourceType: "Category", linkedLabel: "Seats", linkedIds: ["k-seats"], imageSource: "Collection" });
     const seater = item({ name: "3 Seater", resourceType: "Category", linkedLabel: "3 Seater", linkedIds: ["k-3s"], imageSource: "Collection" });
@@ -454,11 +486,15 @@
   }
 
   const LISTING = [
-    { id: "m1", name: "Test", status: "Active", chips: ["Home", "About Us"] },
-    { id: "m2", name: "Draft", status: "Active", chips: ["Tools", "Automotive", "Trw Parts & Service"], more: 5 },
-    { id: "m3", name: "Mega Menu", status: "Inactive", chips: ["Shop", "Brands", "Stockists", "Blog", "Contact"] },
-    { id: "m4", name: "Test Menu", status: "Inactive", chips: ["Shop", "Brands", "Stockists", "Blog", "FAQs"], more: 2 },
-  ];
+    { id: "m1", name: "Test", status: "Active", names: ["Home", "About Us"], chipCap: 5 },
+    { id: "m2", name: "Draft", status: "Active", names: ["Tools", "Automotive", "Trw Parts & Service", "Home", "Shop", "Sale", "Blog", "About"], chipCap: 3 },
+    { id: "m3", name: "Mega Menu", status: "Inactive", names: ["Shop", "Brands", "Stockists", "Blog", "Contact"], chipCap: 5 },
+    { id: "m4", name: "Test Menu", status: "Inactive", names: ["Shop", "Brands", "Stockists", "Blog", "FAQs", "About", "Help"], chipCap: 5 },
+  ].map((row) => {
+    const items = l1Items(row.names);
+    const prev = chipPreview(items, row.chipCap);
+    return { id: row.id, name: row.name, status: row.status, items, chips: prev.chips, more: prev.more };
+  });
 
   function emptyDraft() {
     nid = 1;
@@ -709,8 +745,10 @@
       const selected = state.hoverId === m.id;
       return `
         <tr class="${selected ? "is-selected is-hover" : ""} ${inactive ? "is-inactive" : ""}"
-            data-act="hover-row" data-id="${m.id}" data-open="${m.id}">
-          <td class="${inactive ? "rp-name-muted" : ""}">${esc(m.name)}</td>
+            data-menu-id="${m.id}">
+          <td class="${inactive ? "rp-name-muted" : ""}">
+            <button type="button" class="rp-menu-name" data-act="open-menu" data-id="${m.id}">${esc(m.name)}</button>
+          </td>
           <td>
             <div style="display:flex;flex-wrap:wrap;align-items:center">
               ${m.chips.map((t) => `<span class="rp-chip ${inactive ? "muted" : ""}">${esc(t)}</span>`).join("")}
@@ -1593,11 +1631,22 @@
   function openListingMenu(menuId) {
     const m = state.menus.find((x) => x.id === menuId);
     if (!m) return;
+    const items = cloneItems(m.items || []);
+    bumpNid(items);
     state.editingId = m.id;
-    const items = m.name === "Draft" ? furnitureTree() : [contactItem({ name: m.chips[0] || "Home" })];
-    state.draft = { ...emptyDraft(), menuName: m.name, active: m.status === "Active", items, selectedId: items[0].id };
+    state.draft = {
+      menuName: m.name,
+      active: m.status === "Active",
+      sort: "New → Old",
+      items,
+      selectedId: items[0] ? items[0].id : null,
+      checked: [],
+      nameError: false,
+    };
     state.view = "editor";
     state.listKebab = null;
+    state.picker = null;
+    state.alert = null;
     render();
   }
 
@@ -1607,12 +1656,14 @@
       render();
       return;
     }
-    const preview = flatten(state.draft.items).filter((x) => x.depth === 1).map((x) => x.n.name).slice(0, 8);
+    const preview = chipPreview(state.draft.items);
     const rec = {
       id: state.editingId || uid(),
       name: state.draft.menuName,
       status: state.draft.active ? "Active" : "Inactive",
-      chips: preview.length ? preview : ["—"],
+      items: cloneItems(state.draft.items),
+      chips: preview.chips,
+      more: preview.more,
     };
     if (state.editingId) state.menus = state.menus.map((m) => (m.id === state.editingId ? rec : m));
     else state.menus = [rec, ...state.menus];
@@ -1664,12 +1715,6 @@
       state.picker = null;
       state.alert = null;
       flash("Cancelled");
-      return;
-    }
-    if (act === "hover-row") {
-      if (!e.target.closest("[data-act=list-kebab]") && !e.target.closest(".rp-menu") && !e.target.closest(".rp-more")) {
-        openListingMenu(id);
-      }
       return;
     }
     if (act === "open-menu") { openListingMenu(id); return; }
@@ -1909,9 +1954,9 @@
 
   document.getElementById("app").addEventListener("click", onClick);
   document.getElementById("app").addEventListener("mouseover", (e) => {
-    const row = e.target.closest("[data-act=hover-row]");
+    const row = e.target.closest("tr[data-menu-id]");
     if (row && state.view === "listing") {
-      const id = row.getAttribute("data-id");
+      const id = row.getAttribute("data-menu-id");
       if (state.hoverId !== id) { state.hoverId = id; render(); }
     }
   });
