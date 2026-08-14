@@ -624,6 +624,7 @@ function EditorPage({ draft, setDraft, onCancel, onSave, wasLive }) {
   const [toast, setToast] = useState("");
   const [alert, setAlert] = useState(null);
   const [saveConfirm, setSaveConfirm] = useState(false);
+  const [treeExpanded, setTreeExpanded] = useState({});
   const [baseline] = useState(() => JSON.stringify({ menuName: draft.menuName, active: draft.active, items: draft.items }));
   const typeRef = useRef(null);
   useOutside(typeRef, () => setTypeOpen(false));
@@ -828,7 +829,22 @@ function EditorPage({ draft, setDraft, onCancel, onSave, wasLive }) {
         <section className="rp-tree">
           <div className="rp-tree-bar">
             <h2>Menu structure</h2>
-            <div className="ml-auto">
+            <div className="rp-tree-bar-actions">
+              {draft.items.some((n) => (n.children || []).length) && (
+                <button
+                  type="button"
+                  className="rp-expand"
+                  onClick={() => {
+                    const nodes = draft.items.filter((n) => (n.children || []).length);
+                    const allOpen = nodes.every((n) => treeExpanded[n.id] !== false);
+                    const next = {};
+                    nodes.forEach((n) => { next[n.id] = !allOpen; });
+                    setTreeExpanded(next);
+                  }}
+                >
+                  {draft.items.filter((n) => (n.children || []).length).every((n) => treeExpanded[n.id] !== false) ? "Collapse all" : "Expand all"}
+                </button>
+              )}
               <Btn primary onClick={addNew}>Add new</Btn>
             </div>
           </div>
@@ -854,6 +870,7 @@ function EditorPage({ draft, setDraft, onCancel, onSave, wasLive }) {
               <div className="rp-cols">
                 <input ref={headerRef} type="checkbox" checked={all} className="indeterminate" onChange={toggleHeader} />
                 <span />
+                <span />
                 <span>Item</span>
                 <span>{flatten(draft.items).some((n) => (n.children || []).length) ? "Included" : "Include children"}</span>
                 <span>Level</span>
@@ -864,6 +881,8 @@ function EditorPage({ draft, setDraft, onCancel, onSave, wasLive }) {
                 depth={1}
                 selectedId={draft.selectedId}
                 checked={checked}
+                treeExpanded={treeExpanded}
+                setTreeExpanded={setTreeExpanded}
                 rowMenu={rowMenu}
                 setRowMenu={setRowMenu}
                 onSelect={(id) => setDraft({ ...draft, selectedId: id })}
@@ -1062,11 +1081,14 @@ function EditorPage({ draft, setDraft, onCancel, onSave, wasLive }) {
   );
 }
 
-function TreeRows({ nodes, depth, selectedId, checked, onSelect, onCheck, onHide, onRemove, onIndent, onOutdent, rowMenu, setRowMenu }) {
+function TreeRows({ nodes, depth, selectedId, checked, onSelect, onCheck, onHide, onRemove, onIndent, onOutdent, rowMenu, setRowMenu, treeExpanded, setTreeExpanded }) {
   return nodes.map((n) => {
     const loc = locate(nodes, n.id);
     const canIndent = loc && loc.index > 0 && depth < 3;
     const canOutdent = depth > 1;
+    const kids = (n.children || []).length;
+    const expanded = treeExpanded[n.id] !== false;
+    const showKids = kids && (depth !== 1 || expanded);
     return (
     <React.Fragment key={n.id}>
       <div
@@ -1081,6 +1103,17 @@ function TreeRows({ nodes, depth, selectedId, checked, onSelect, onCheck, onHide
             <path fillRule="evenodd" clipRule="evenodd" d="M16 8C17.1 8 18 7.1 18 6C18 4.9 17.1 4 16 4C14.9 4 14 4.9 14 6C14 7.1 14.9 8 16 8ZM16 10C14.9 10 14 10.9 14 12C14 13.1 14.9 14 16 14C17.1 14 18 13.1 18 12C18 10.9 17.1 10 16 10ZM16 16C14.9 16 14 16.9 14 18C14 19.1 14.9 20 16 20C17.1 20 18 19.1 18 18C18 16.9 17.1 16 16 16Z" fill="currentColor"/>
           </svg>
         </span>
+        {depth === 1 && kids ? (
+          <button
+            type="button"
+            className="rp-chev"
+            aria-label={`${expanded ? "Collapse" : "Expand"} ${n.name}`}
+            aria-expanded={expanded}
+            onClick={(e) => { e.stopPropagation(); setTreeExpanded({ ...treeExpanded, [n.id]: !expanded }); }}
+          >
+            <i className={`mdi ${expanded ? "mdi-chevron-down" : "mdi-chevron-right"}`} />
+          </button>
+        ) : <span className="rp-chev-slot" />}
         <div>
           <div className="nm">
             {n.name}
@@ -1104,7 +1137,7 @@ function TreeRows({ nodes, depth, selectedId, checked, onSelect, onCheck, onHide
           )}
         </div>
       </div>
-      {(n.children || []).length > 0 && (
+      {showKids && (
         <TreeRows
           nodes={n.children}
           depth={depth + 1}
@@ -1118,6 +1151,8 @@ function TreeRows({ nodes, depth, selectedId, checked, onSelect, onCheck, onHide
           onOutdent={onOutdent}
           rowMenu={rowMenu}
           setRowMenu={setRowMenu}
+          treeExpanded={treeExpanded}
+          setTreeExpanded={setTreeExpanded}
         />
       )}
     </React.Fragment>

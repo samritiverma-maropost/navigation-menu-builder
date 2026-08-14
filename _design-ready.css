@@ -41,10 +41,18 @@
 .rp-crumb .sep { color: #03b6fc; margin: 0 4px; }
 
 .rp-row {
-  grid-template-columns: 36px 24px 1fr 220px 48px 36px;
+  grid-template-columns: 36px 24px 22px 1fr 220px 48px 36px;
   min-height: 56px;
 }
-.rp-cols { grid-template-columns: 36px 24px 1fr 220px 48px 36px; }
+.rp-cols { grid-template-columns: 36px 24px 22px 1fr 220px 48px 36px; }
+.rp-tree-bar-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rp-tree-bar .rp-expand { margin-left: 0; }
+.rp-chev-slot { width: 22px; height: 22px; display: inline-block; flex-shrink: 0; }
 .rp-tree-list { flex: 1; overflow: visible; }
 .rp-row:has(.rp-action-menu) { z-index: 6; position: relative; }
 .rp-row-act { position: relative; }
@@ -204,7 +212,12 @@
   width: 22px;
   height: 22px;
   padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
+.rp-chev .mdi { font-size: 18px; line-height: 1; }
 .rp-apply { width: 100%; margin-top: 12px; }
 
 .dr-alert {
@@ -524,7 +537,7 @@ body { overflow-x: hidden; }
   .rp-profile { padding: 0 8px; }
   .rp-main { padding: 16px 16px 32px; }
   .rp-table th, .rp-table td { padding: 0 16px; }
-  .rp-row, .rp-cols { grid-template-columns: 36px 24px minmax(0, 1fr) 48px 36px; }
+  .rp-row, .rp-cols { grid-template-columns: 36px 24px 22px minmax(0, 1fr) 48px 36px; }
   .rp-row > .rp-included,
   .rp-cols > span:nth-child(4) { display: none; }
   .rp-pick-row, .rp-pick-cols { grid-template-columns: 28px 22px minmax(0, 1fr) minmax(72px, auto); }
@@ -580,7 +593,7 @@ body { overflow-x: hidden; }
   .rp-menu-name-field { max-width: none; }
   .rp-editor-actions { width: 100%; }
   .rp-editor-actions .rp-btn { flex: 1; min-width: 0; }
-  .rp-row, .rp-cols { grid-template-columns: 36px 24px minmax(0, 1fr) 36px; padding-right: 8px; }
+  .rp-row, .rp-cols { grid-template-columns: 36px 24px 22px minmax(0, 1fr) 36px; padding-right: 8px; }
   .rp-row > .rp-level,
   .rp-row > span[style*="rgba(0,0,0,.32)"],
   .rp-cols > span:nth-child(5) { display: none; }

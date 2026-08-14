@@ -618,6 +618,7 @@
   function captureBaseline() {
     state.baseline = menuFingerprint(state.draft);
     state.saveConfirm = false;
+    state.treeExpanded = {};
   }
 
   function isDirty() {
@@ -643,6 +644,7 @@
     baseline: "",
     saveConfirm: false,
     openedLive: false,
+    treeExpanded: {},
     typeOpen: false,
     rowMenu: null,
     picker: null,
@@ -1232,6 +1234,19 @@
     });
   }
 
+  function l1Expandable() {
+    return (state.draft.items || []).filter((n) => (n.children || []).length);
+  }
+
+  function isTreeExpanded(id) {
+    return state.treeExpanded[id] !== false;
+  }
+
+  function allL1Expanded() {
+    const nodes = l1Expandable();
+    return nodes.length > 0 && nodes.every((n) => isTreeExpanded(n.id));
+  }
+
   function treeRows(nodes, depth, ancestors) {
     depth = depth || 1;
     ancestors = ancestors || [];
@@ -1242,6 +1257,11 @@
       const canIndent = loc && loc.index > 0 && depth + maxRelDepth(n) <= 3;
       const canOutdent = !!(loc && loc.parent);
       const open = state.rowMenu === n.id;
+      const expanded = isTreeExpanded(n.id);
+      const showKids = kids && (depth !== 1 || expanded);
+      const chevron = (depth === 1 && kids)
+        ? `<button type="button" class="rp-chev" data-act="tree-exp" data-id="${n.id}" aria-label="${expanded ? "Collapse" : "Expand"} ${esc(n.name)}" aria-expanded="${expanded}"><i class="mdi ${expanded ? "mdi-chevron-down" : "mdi-chevron-right"}"></i></button>`
+        : `<span class="rp-chev-slot"></span>`;
       return `
         <div class="rp-row ${n.id === state.draft.selectedId ? "selected" : ""} ${n.hidden ? "hidden-item" : ""}"
           style="padding-left:${16 + (depth - 1) * 20}px" data-act="select-row" data-id="${n.id}">
@@ -1252,6 +1272,7 @@
                   <path fill-rule="evenodd" clip-rule="evenodd" d="M16 8C17.1 8 18 7.1 18 6C18 4.9 17.1 4 16 4C14.9 4 14 4.9 14 6C14 7.1 14.9 8 16 8ZM16 10C14.9 10 14 10.9 14 12C14 13.1 14.9 14 16 14C17.1 14 18 13.1 18 12C18 10.9 17.1 10 16 10ZM16 16C14.9 16 14 16.9 14 18C14 19.1 14.9 20 16 20C17.1 20 18 19.1 18 18C18 16.9 17.1 16 16 16Z" fill="currentColor"/>
                 </svg>
               </span>
+              ${chevron}
               <div>
             <div class="nm">
               ${esc(n.name)}
@@ -1273,7 +1294,7 @@
             </div>` : ""}
           </div>
         </div>
-        ${kids ? treeRows(n.children, depth + 1, ancestors.concat([n.linkedLabel || n.name])) : ""}
+        ${showKids ? treeRows(n.children, depth + 1, ancestors.concat([n.linkedLabel || n.name])) : ""}
       `;
     }).join("");
   }
@@ -1604,7 +1625,8 @@
         <section class="rp-tree">
           <div class="rp-tree-bar">
             <h2>Menu structure</h2>
-            <div style="margin-left:auto">
+            <div class="rp-tree-bar-actions">
+              ${l1Expandable().length ? `<button type="button" class="rp-expand" data-act="tree-toggle-all">${allL1Expanded() ? "Collapse all" : "Expand all"}</button>` : ""}
               <button type="button" class="rp-btn primary" data-act="add-new">Add new</button>
             </div>
           </div>
@@ -1617,6 +1639,7 @@
             <div class="rp-tree-list">
               <div class="rp-cols">
                 <input type="checkbox" ${all ? "checked" : ""} ${some ? `class="indeterminate"` : ""} data-act="check-all" ${some ? `data-indeterminate="1"` : ""} />
+                <span></span>
                 <span></span>
                 <span>Item</span>
                 <span>${flatten(items).some((x) => (x.n.children || []).length) ? "Included" : "Include children"}</span>
@@ -2042,6 +2065,17 @@
       const exp = {};
       walk(CATALOG[state.picker.kind] || [], (n) => { exp[n.id] = true; });
       state.picker.expanded = exp;
+      render(); return;
+    }
+    if (act === "tree-exp") {
+      state.treeExpanded = Object.assign({}, state.treeExpanded, { [id]: !isTreeExpanded(id) });
+      render(); return;
+    }
+    if (act === "tree-toggle-all") {
+      const open = !allL1Expanded();
+      const next = {};
+      l1Expandable().forEach((n) => { next[n.id] = open; });
+      state.treeExpanded = next;
       render(); return;
     }
     if (act === "apply-picker") { tryApply(); return; }

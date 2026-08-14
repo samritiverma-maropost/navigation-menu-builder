@@ -293,6 +293,14 @@ body {
 .rp-tree { display: flex; flex-direction: column; border-right: 1px solid var(--ls-div); min-width: 0; }
 .rp-tree-bar { display: flex; align-items: center; gap: 12px; padding: 16px 20px; }
 .rp-tree-bar h2 { margin: 0; font-size: 16px; font-weight: 500; }
+.rp-tree-bar-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rp-tree-bar .rp-expand { margin-left: 0; }
+.rp-chev-slot { width: 22px; height: 22px; display: inline-block; flex-shrink: 0; }
 .rp-bulk {
   margin: 0 20px 8px; display: flex; align-items: center; gap: 12px;
   background: var(--ls-ink); color: #fff; border-radius: 4px; padding: 8px 16px;
@@ -303,12 +311,12 @@ body {
 .rp-bulk .ghost:hover, .rp-btn.ghost:hover { background: rgba(255,255,255,0.08); }
 
 .rp-cols {
-  display: grid; grid-template-columns: 36px 24px 1fr 220px 48px 36px;
+  display: grid; grid-template-columns: 36px 24px 22px 1fr 220px 48px 36px;
   gap: 8px; align-items: center;
   padding: 8px 20px; font-size: 12px; color: var(--ls-med); border-bottom: 1px solid var(--ls-div);
 }
 .rp-row {
-  display: grid; grid-template-columns: 36px 24px 1fr 220px 48px 36px;
+  display: grid; grid-template-columns: 36px 24px 22px 1fr 220px 48px 36px;
   gap: 8px; align-items: center;
   padding: 10px 20px; border-bottom: 1px solid #eee; cursor: pointer;
 }
