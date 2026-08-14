@@ -403,21 +403,52 @@ body {
   position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.4);
   display: grid; place-items: center;
 }
+.rp-modal.save-alert {
+  background: rgba(0, 0, 0, 0.6);
+  top: calc(64px + env(safe-area-inset-top, 0px));
+}
 .rp-modal-card { width: min(560px, 92vw); background: #fff; border-radius: 4px; padding: 20px;
   box-shadow: 0 8px 24px rgba(0,0,0,.18);
 }
-.rp-save-confirm p {
-  margin: 0 0 20px;
-  font: 400 16px/24px Roboto, sans-serif;
+.rp-save-confirm {
+  width: min(500px, calc(100vw - 32px));
+  padding: 32px 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 4px 5px rgba(0,0,0,0.14), 0 1px 10px rgba(0,0,0,0.12);
+}
+.rp-save-confirm h2 {
+  margin: 0;
+  width: 100%;
+  font: 600 20px/24px Roboto, sans-serif;
   letter-spacing: 0.15px;
   color: var(--ls-high);
+}
+.rp-save-confirm p {
+  margin: 0;
+  width: 100%;
+  font: 400 14px/20px Roboto, sans-serif;
+  letter-spacing: 0.25px;
+  color: var(--ls-med);
 }
 .rp-save-confirm-acts {
   display: flex;
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 8px;
+  padding-top: 8px;
 }
+.rp-btn.text {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #1e2533;
+  min-height: 36px;
+  padding: 6px 16px;
+}
+.rp-btn.text:hover { background: var(--ls-hover); }
 .rp-toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   background: var(--ls-ink); color: #fff; padding: 10px 16px; border-radius: 4px; font-size: 13px; z-index: 70;

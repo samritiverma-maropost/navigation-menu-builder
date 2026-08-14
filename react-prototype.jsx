@@ -616,7 +616,7 @@ function ListingPage({ menus, onCreate, onOpen, onDelete }) {
   );
 }
 
-function EditorPage({ draft, setDraft, onCancel, onSave }) {
+function EditorPage({ draft, setDraft, onCancel, onSave, wasLive }) {
   const [typeOpen, setTypeOpen] = useState(false);
   const [rowMenu, setRowMenu] = useState(null);
   const [picker, setPicker] = useState(null);
@@ -787,13 +787,23 @@ function EditorPage({ draft, setDraft, onCancel, onSave }) {
 
   function requestSave() {
     const dirty = JSON.stringify({ menuName: draft.menuName, active: draft.active, items: draft.items }) !== baseline;
-    if (draft.active && dirty) {
-      setSaveConfirm(true);
+    if (!draft.active) {
+      onSave();
+      setToast("Menu saved");
+      setTimeout(() => setToast(""), 1800);
       return;
     }
-    onSave();
-    setToast("Menu saved");
-    setTimeout(() => setToast(""), 1800);
+    if (wasLive) {
+      if (!dirty) {
+        onSave();
+        setToast("Menu saved");
+        setTimeout(() => setToast(""), 1800);
+        return;
+      }
+      setSaveConfirm("edit-live");
+      return;
+    }
+    setSaveConfirm("make-live");
   }
 
   return (
@@ -1016,11 +1026,16 @@ function EditorPage({ draft, setDraft, onCancel, onSave }) {
       </div>
 
       {saveConfirm && (
-        <div className="rp-modal" onClick={() => setSaveConfirm(false)}>
+        <div className="rp-modal save-alert" onClick={() => setSaveConfirm(false)}>
           <div className="rp-modal-card rp-save-confirm" onClick={(e) => e.stopPropagation()}>
-            <p id="save-live-copy">This menu is live on your storefront — saving will update it immediately. Continue?</p>
+            <h2 id="save-alert-title">{saveConfirm === "edit-live" ? "This menu is live" : "This will make the menu live"}</h2>
+            <p>
+              {saveConfirm === "edit-live"
+                ? "This menu is live on your storefront - shoppers will see updated menu immediately."
+                : "Once you save, this menu becomes visible to shoppers on your storefront."}
+            </p>
             <div className="rp-save-confirm-acts">
-              <Btn onClick={() => setSaveConfirm(false)}>Cancel</Btn>
+              <Btn className="text" onClick={() => setSaveConfirm(false)}>Cancel</Btn>
               <Btn primary onClick={() => { setSaveConfirm(false); onSave(); setToast("Menu saved"); setTimeout(() => setToast(""), 1800); }}>Save</Btn>
             </div>
           </div>
@@ -1287,7 +1302,7 @@ function App() {
   }
 
   if (view === "list") return <ListingPage menus={menus} onCreate={create} onOpen={open} onDelete={onDelete} />;
-  return <EditorPage draft={draft} setDraft={setDraft} onCancel={() => setView("list")} onSave={save} />;
+  return <EditorPage draft={draft} setDraft={setDraft} onCancel={() => setView("list")} onSave={save} wasLive={!!(editingId && menus.find((m) => m.id === editingId && m.status === "Active"))} />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);

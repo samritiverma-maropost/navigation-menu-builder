@@ -642,6 +642,7 @@
     editingId: null,
     baseline: "",
     saveConfirm: false,
+    openedLive: false,
     typeOpen: false,
     rowMenu: null,
     picker: null,
@@ -659,6 +660,7 @@
   function seedFlow(flow) {
     state.flow = flow;
     state.typeOpen = false;
+    state.openedLive = false;
     state.rowMenu = null;
     state.picker = null;
     state.pickerByType = {};
@@ -1545,12 +1547,18 @@
   }
 
   function saveConfirmHtml() {
+    const editLive = state.saveConfirm === "edit-live";
+    const title = editLive ? "This menu is live" : "This will make the menu live";
+    const body = editLive
+      ? "This menu is live on your storefront - shoppers will see updated menu immediately."
+      : "Once you save, this menu becomes visible to shoppers on your storefront.";
     return `
-      <div class="rp-modal" data-act="dismiss-save" role="dialog" aria-modal="true" aria-describedby="save-live-copy">
+      <div class="rp-modal save-alert" data-act="dismiss-save" role="dialog" aria-modal="true" aria-labelledby="save-alert-title">
         <div class="rp-modal-card rp-save-confirm" data-act="noop">
-          <p id="save-live-copy">This menu is live on your storefront — saving will update it immediately. Continue?</p>
+          <h2 id="save-alert-title">${esc(title)}</h2>
+          <p>${esc(body)}</p>
           <div class="rp-save-confirm-acts">
-            <button type="button" class="rp-btn" data-act="dismiss-save">Cancel</button>
+            <button type="button" class="rp-btn text" data-act="dismiss-save">Cancel</button>
             <button type="button" class="rp-btn primary" data-act="confirm-save">Save</button>
           </div>
         </div>
@@ -1765,11 +1773,18 @@
       nameError: false,
     };
     captureBaseline();
+    state.openedLive = m.status === "Active";
     state.view = "editor";
     state.listKebab = null;
     state.picker = null;
     state.alert = null;
     render();
+  }
+
+  function saveAlertKind() {
+    if (!state.draft.active) return null;
+    if (state.editingId && state.openedLive) return isDirty() ? "edit-live" : null;
+    return "make-live";
   }
 
   function requestSave() {
@@ -1778,8 +1793,9 @@
       render();
       return;
     }
-    if (state.draft.active && isDirty()) {
-      state.saveConfirm = true;
+    const kind = saveAlertKind();
+    if (kind) {
+      state.saveConfirm = kind;
       render();
       return;
     }
@@ -1846,6 +1862,7 @@
       state.editingId = null;
       state.draft = emptyDraft();
       captureBaseline();
+      state.openedLive = false;
       state.view = "editor";
       render(); return;
     }
