@@ -406,6 +406,18 @@ body {
 .rp-modal-card { width: min(560px, 92vw); background: #fff; border-radius: 4px; padding: 20px;
   box-shadow: 0 8px 24px rgba(0,0,0,.18);
 }
+.rp-save-confirm p {
+  margin: 0 0 20px;
+  font: 400 16px/24px Roboto, sans-serif;
+  letter-spacing: 0.15px;
+  color: var(--ls-high);
+}
+.rp-save-confirm-acts {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .rp-toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   background: var(--ls-ink); color: #fff; padding: 10px 16px; border-radius: 4px; font-size: 13px; z-index: 70;

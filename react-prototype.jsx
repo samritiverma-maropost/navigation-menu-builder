@@ -12,8 +12,12 @@ const RESOURCE_TYPES = [
 ];
 
 const PICKER_TYPES = ["Collection", "Category", "Pages", "Blogs"];
-const SORTS = ["Synced", "A → Z", "Z → A", "New → Old", "Old → New", "Manual"];
 const ROWS_OPTIONS = [10, 25, 50, 100];
+const IMG_SRC_TABS = [
+  { value: "Collection", label: "Resource Image" },
+  { value: "Custom", label: "Custom" },
+  { value: "None", label: "None" },
+];
 
 const IMAGE_NOTES = {
   Collection:
@@ -613,16 +617,15 @@ function ListingPage({ menus, onCreate, onOpen, onDelete }) {
 }
 
 function EditorPage({ draft, setDraft, onCancel, onSave }) {
-  const [sortOpen, setSortOpen] = useState(false);
   const [typeOpen, setTypeOpen] = useState(false);
   const [rowMenu, setRowMenu] = useState(null);
   const [picker, setPicker] = useState(null);
   const [preview, setPreview] = useState(false);
   const [toast, setToast] = useState("");
   const [alert, setAlert] = useState(null);
-  const sortRef = useRef(null);
+  const [saveConfirm, setSaveConfirm] = useState(false);
+  const [baseline] = useState(() => JSON.stringify({ menuName: draft.menuName, active: draft.active, items: draft.items }));
   const typeRef = useRef(null);
-  useOutside(sortRef, () => setSortOpen(false));
   useOutside(typeRef, () => setTypeOpen(false));
 
   const selected = findNode(draft.items, draft.selectedId);
@@ -780,15 +783,18 @@ function EditorPage({ draft, setDraft, onCancel, onSave }) {
     else applyPicker();
   }
 
-  const sortedItems = useMemo(() => {
-    const copy = [...draft.items];
-    if (draft.sort === "A → Z") copy.sort((a, b) => a.name.localeCompare(b.name));
-    if (draft.sort === "Z → A") copy.sort((a, b) => b.name.localeCompare(a.name));
-    if (draft.sort === "Old → New") copy.reverse();
-    return copy;
-  }, [draft.items, draft.sort]);
-
   const showHide = selected && selected.name && selected.name !== "New Page";
+
+  function requestSave() {
+    const dirty = JSON.stringify({ menuName: draft.menuName, active: draft.active, items: draft.items }) !== baseline;
+    if (draft.active && dirty) {
+      setSaveConfirm(true);
+      return;
+    }
+    onSave();
+    setToast("Menu saved");
+    setTimeout(() => setToast(""), 1800);
+  }
 
   return (
     <Shell crumb="Create New" onCrumb={onCancel}>
@@ -804,7 +810,7 @@ function EditorPage({ draft, setDraft, onCancel, onSave }) {
         <div className="ml-auto flex gap-2 pb-2">
           <Btn onClick={() => setPreview(true)}><i className="mdi mdi-eye-outline text-[16px]" />Preview</Btn>
           <Btn onClick={onCancel}>Cancel</Btn>
-          <Btn primary onClick={() => { onSave(); setToast("Menu saved"); setTimeout(() => setToast(""), 1800); }}>Save</Btn>
+          <Btn primary onClick={requestSave}>Save</Btn>
         </div>
       </div>
 
@@ -812,19 +818,6 @@ function EditorPage({ draft, setDraft, onCancel, onSave }) {
         <section className="rp-tree">
           <div className="rp-tree-bar">
             <h2>Menu structure</h2>
-            <div className="relative" ref={sortRef}>
-              <button type="button" className="rp-select-btn" style={{ height: 40, width: "auto", minWidth: 140 }} onClick={() => setSortOpen((v) => !v)}>
-                {draft.sort}
-                <i className="mdi mdi-chevron-down" />
-              </button>
-              {sortOpen && (
-                <Menu
-                  items={SORTS}
-                  active={draft.sort}
-                  onPick={(s) => { setDraft({ ...draft, sort: s }); setSortOpen(false); }}
-                />
-              )}
-            </div>
             <div className="ml-auto">
               <Btn primary onClick={addNew}>Add new</Btn>
             </div>
@@ -857,7 +850,7 @@ function EditorPage({ draft, setDraft, onCancel, onSave }) {
                 <span />
               </div>
               <TreeRows
-                nodes={sortedItems}
+                nodes={draft.items}
                 depth={1}
                 selectedId={draft.selectedId}
                 checked={checked}
@@ -977,9 +970,9 @@ function EditorPage({ draft, setDraft, onCancel, onSave }) {
               <div>
                 <p className="mb-2 text-[12px] text-[rgba(0,0,0,0.6)]">Image source</p>
                 <div className="rp-seg">
-                  {["Collection", "Custom", "None"].map((opt) => (
-                    <button key={opt} type="button" className={selected.imageSource === opt ? "on" : ""} onClick={() => patchSelected({ imageSource: opt })}>
-                      {opt}
+                  {IMG_SRC_TABS.map((opt) => (
+                    <button key={opt.value} type="button" className={selected.imageSource === opt.value ? "on" : ""} onClick={() => patchSelected({ imageSource: opt.value })}>
+                      {opt.label}
                     </button>
                   ))}
                 </div>
@@ -1022,6 +1015,17 @@ function EditorPage({ draft, setDraft, onCancel, onSave }) {
         </aside>
       </div>
 
+      {saveConfirm && (
+        <div className="rp-modal" onClick={() => setSaveConfirm(false)}>
+          <div className="rp-modal-card rp-save-confirm" onClick={(e) => e.stopPropagation()}>
+            <p id="save-live-copy">This menu is live on your storefront — saving will update it immediately. Continue?</p>
+            <div className="rp-save-confirm-acts">
+              <Btn onClick={() => setSaveConfirm(false)}>Cancel</Btn>
+              <Btn primary onClick={() => { setSaveConfirm(false); onSave(); setToast("Menu saved"); setTimeout(() => setToast(""), 1800); }}>Save</Btn>
+            </div>
+          </div>
+        </div>
+      )}
       {preview && (
         <div className="rp-modal" onClick={() => setPreview(false)}>
           <div className="rp-modal-card" onClick={(e) => e.stopPropagation()}>
@@ -1222,7 +1226,6 @@ function emptyDraft() {
   return {
     menuName: "Main Menu",
     active: true,
-    sort: "New → Old",
     items: [],
     selectedId: null,
     checked: [],
@@ -1258,7 +1261,6 @@ function App() {
     setDraft({
       menuName: m.name,
       active: m.status === "Active",
-      sort: "New → Old",
       items: m.items ? JSON.parse(JSON.stringify(m.items)) : [],
       selectedId: m.items && m.items[0] ? m.items[0].id : null,
       checked: [],

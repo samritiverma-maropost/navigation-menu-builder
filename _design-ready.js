@@ -11,7 +11,6 @@
     "Products",
   ];
   const PICKER_TYPES = ["Collection", "Category", "Pages", "Blogs"];
-  const SORTS = ["Synced", "A → Z", "Z → A", "New → Old", "Old → New", "Manual"];
   const RAIL = [
     { id: "dashboard", src: "icons/dashboard.svg", label: "Dashboard" },
     { id: "theme", src: "icons/theme.svg", label: "Theme" },
@@ -314,6 +313,11 @@
     Products: { title: "Products", body: "This item links to a product. Menu nesting still follows L1 → L2 → L3." },
   };
 
+  const IMG_SRC_TABS = [
+    { value: "Collection", label: "Resource Image" },
+    { value: "Custom", label: "Custom" },
+    { value: "None", label: "None" },
+  ];
   const IMAGE_NOTES = {
     Collection: {
       title: "Using collection image",
@@ -596,12 +600,28 @@
     return {
       menuName: "Main Menu",
       active: true,
-      sort: "New → Old",
       items: [],
       selectedId: null,
       checked: [],
       nameError: false,
     };
+  }
+
+  function menuFingerprint(draft) {
+    return JSON.stringify({
+      menuName: draft.menuName,
+      active: draft.active,
+      items: draft.items,
+    });
+  }
+
+  function captureBaseline() {
+    state.baseline = menuFingerprint(state.draft);
+    state.saveConfirm = false;
+  }
+
+  function isDirty() {
+    return menuFingerprint(state.draft) !== state.baseline;
   }
 
   const params = new URLSearchParams(location.search);
@@ -620,7 +640,8 @@
     headerOpen: null,
     draft: emptyDraft(),
     editingId: null,
-    sortOpen: false,
+    baseline: "",
+    saveConfirm: false,
     typeOpen: false,
     rowMenu: null,
     picker: null,
@@ -637,7 +658,6 @@
 
   function seedFlow(flow) {
     state.flow = flow;
-    state.sortOpen = false;
     state.typeOpen = false;
     state.rowMenu = null;
     state.picker = null;
@@ -661,6 +681,7 @@
       state.view = "editor";
       state.screen = "Image Source: None";
       state.draft = { ...emptyDraft(), items: [c], selectedId: c.id };
+      captureBaseline();
       return;
     }
     if (flow === "c") {
@@ -669,6 +690,7 @@
       state.view = "editor";
       state.screen = "Add new menu 2";
       state.draft = { ...emptyDraft(), items: [c, page], selectedId: page.id };
+      captureBaseline();
       return;
     }
     if (flow === "d") {
@@ -676,6 +698,7 @@
       state.view = "editor";
       state.screen = "Resource type page";
       state.draft = { ...emptyDraft(), items: [c], selectedId: c.id };
+      captureBaseline();
       return;
     }
     if (flow === "e") {
@@ -683,6 +706,7 @@
       state.view = "editor";
       state.screen = "Resource type blogs";
       state.draft = { ...emptyDraft(), items: [c], selectedId: c.id };
+      captureBaseline();
       return;
     }
     if (flow === "bulk1" || flow === "bulk2") {
@@ -694,6 +718,7 @@
       state.screen = flow === "bulk2" ? "Bulk action idea 2" : "Bulk action idea 1";
       state.bulkMode = flow === "bulk2" ? 2 : 1;
       state.draft = { ...emptyDraft(), items, selectedId: furn.id, checked: ids.slice(0, 3) };
+      captureBaseline();
       return;
     }
     if (flow === "alert1") {
@@ -706,6 +731,7 @@
       state.draft = { ...emptyDraft(), items, selectedId: page.id };
       state.picker = { kind: "Category", selected, include: {}, expanded: { "k-furn": true, "k-sofas": true, "k-tables": true }, query: "" };
       state.alert = { type: "overcap", count: 20, cap: 10 };
+      captureBaseline();
       return;
     }
     if (flow === "alert2") {
@@ -718,6 +744,7 @@
       state.draft = { ...emptyDraft(), items, selectedId: page.id };
       state.picker = { kind: "Category", selected, include: { "k-furn": true, "k-out": true }, expanded: { "k-furn": true, "k-sofas": true, "k-tables": true }, query: "" };
       state.alert = { type: "multil1", count: 47, cap: 50 };
+      captureBaseline();
       return;
     }
     state.view = "listing";
@@ -740,7 +767,6 @@
     if (state.alert && state.alert.type === "multil1") { state.screen = "Alert msg 2"; return; }
     if (d.checked.length && state.bulkMode === 2) { state.screen = "Bulk action idea 2"; return; }
     if (d.checked.length) { state.screen = "Bulk action idea 1"; return; }
-    if (state.sortOpen && d.items.length === 0) { state.screen = "Filter page"; return; }
     if (state.rowMenu) { state.screen = "Actions"; return; }
     if (sel && sel.hidden) { state.screen = "Hide Menu"; return; }
     if (state.typeOpen) { state.screen = "Select Resource type"; return; }
@@ -1313,9 +1339,6 @@
       <div class="rp-picker">
         <div class="rp-picker-head">
           <b>Choose collection</b>
-          <button type="button" class="rp-select-btn" style="position:static;height:36px;width:auto;min-width:120px;padding:0 10px" data-act="noop">
-            ${esc(state.draft.sort)} <i class="mdi mdi-chevron-down"></i>
-          </button>
           <button type="button" class="rp-expand" data-act="expand-all">Expand all</button>
         </div>
         <div class="rp-search-mini" style="margin-bottom:8px">
@@ -1407,8 +1430,8 @@
         <div>
           <p style="margin:0 0 8px;font-size:12px;color:rgba(0,0,0,.6)">Image source</p>
           <div class="rp-seg">
-            ${["Collection", "Custom", "None"].map((opt) => `
-              <button type="button" class="${sel.imageSource === opt ? "on" : ""}" data-act="img-src" data-t="${opt}">${opt}</button>
+            ${IMG_SRC_TABS.map((opt) => `
+              <button type="button" class="${sel.imageSource === opt.value ? "on" : ""}" data-act="img-src" data-t="${opt.value}">${opt.label}</button>
             `).join("")}
           </div>
           ${sel.imageSource === "Custom" ? `
@@ -1521,6 +1544,19 @@
       </div>`;
   }
 
+  function saveConfirmHtml() {
+    return `
+      <div class="rp-modal" data-act="dismiss-save" role="dialog" aria-modal="true" aria-describedby="save-live-copy">
+        <div class="rp-modal-card rp-save-confirm" data-act="noop">
+          <p id="save-live-copy">This menu is live on your storefront — saving will update it immediately. Continue?</p>
+          <div class="rp-save-confirm-acts">
+            <button type="button" class="rp-btn" data-act="dismiss-save">Cancel</button>
+            <button type="button" class="rp-btn primary" data-act="confirm-save">Save</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
   function editorView() {
     const d = state.draft;
     const sel = findNode(d.items, d.selectedId);
@@ -1529,10 +1565,7 @@
     const some = d.checked.length > 0 && d.checked.length < allIds.length;
     const all = allIds.length > 0 && d.checked.length === allIds.length;
 
-    let items = d.items.slice();
-    if (d.sort === "A → Z") items = items.slice().sort((a, b) => a.name.localeCompare(b.name));
-    if (d.sort === "Z → A") items = items.slice().sort((a, b) => b.name.localeCompare(a.name));
-    if (d.sort === "Old → New") items = items.slice().reverse();
+    const items = d.items;
 
     const bulk = d.checked.length ? `
       <div class="rp-bulk ${state.bulkMode === 2 ? "idea2" : ""}">
@@ -1563,14 +1596,6 @@
         <section class="rp-tree">
           <div class="rp-tree-bar">
             <h2>Menu structure</h2>
-            <div style="position:relative">
-              <button type="button" class="rp-select-btn rp-sort-btn" data-act="toggle-sort">
-                ${esc(d.sort)} <i class="mdi mdi-chevron-down"></i>
-              </button>
-              ${state.sortOpen ? `<div class="rp-menu" style="min-width:160px">
-                ${SORTS.map((s) => `<button type="button" class="${s === d.sort ? "is-active" : ""}" data-act="set-sort" data-t="${esc(s)}">${esc(s)}</button>`).join("")}
-              </div>` : ""}
-            </div>
             <div style="margin-left:auto">
               <button type="button" class="rp-btn primary" data-act="add-new">Add new</button>
             </div>
@@ -1596,6 +1621,7 @@
         <aside class="rp-details">${detailsHtml(sel)}</aside>
       </div>
       ${previewHtml()}
+      ${state.saveConfirm ? saveConfirmHtml() : ""}
     `;
     return shell(inner, "Create New");
   }
@@ -1733,12 +1759,12 @@
     state.draft = {
       menuName: m.name,
       active: m.status === "Active",
-      sort: "New → Old",
       items,
       selectedId: items[0] ? items[0].id : null,
       checked: [],
       nameError: false,
     };
+    captureBaseline();
     state.view = "editor";
     state.listKebab = null;
     state.picker = null;
@@ -1746,12 +1772,22 @@
     render();
   }
 
-  function saveMenu() {
+  function requestSave() {
     if (!state.draft.menuName.trim()) {
       state.draft.nameError = true;
       render();
       return;
     }
+    if (state.draft.active && isDirty()) {
+      state.saveConfirm = true;
+      render();
+      return;
+    }
+    commitSave();
+  }
+
+  function commitSave() {
+    state.saveConfirm = false;
     const existing = state.editingId ? state.menus.find((m) => m.id === state.editingId) : null;
     const cap = existing && existing.chipCap != null ? existing.chipCap : 4;
     const preview = chipPreview(state.draft.items, cap);
@@ -1772,16 +1808,19 @@
     render();
   }
 
+  function saveMenu() {
+    requestSave();
+  }
+
   function onClick(e) {
     if (skipClick) return;
     const t = e.target.closest("[data-act]");
     if (!t) {
-      const close = state.rowMenu || state.listKebab || state.headerOpen || state.sortOpen || state.typeOpen || state.rowsOpen;
+      const close = state.rowMenu || state.listKebab || state.headerOpen || state.typeOpen || state.rowsOpen;
       if (close && !e.target.closest(".rp-menu") && !e.target.closest(".rp-kebab") && !e.target.closest(".rp-select-btn")) {
         state.rowMenu = null;
         state.listKebab = null;
         state.headerOpen = null;
-        state.sortOpen = false;
         state.typeOpen = false;
         state.rowsOpen = false;
         render();
@@ -1806,6 +1845,7 @@
     if (act === "create") {
       state.editingId = null;
       state.draft = emptyDraft();
+      captureBaseline();
       state.view = "editor";
       render(); return;
     }
@@ -1831,8 +1871,6 @@
     if (act === "rows-open") { state.rowsOpen = !state.rowsOpen; render(); return; }
     if (act === "rows") { state.rowsPerPage = Number(t.getAttribute("data-n")); state.rowsOpen = false; render(); return; }
     if (act === "toggle-active") { state.draft.active = !state.draft.active; render(); return; }
-    if (act === "toggle-sort") { state.sortOpen = !state.sortOpen; state.typeOpen = false; render(); return; }
-    if (act === "set-sort") { state.draft.sort = t.getAttribute("data-t"); state.sortOpen = false; render(); return; }
     if (act === "add-new") {
       const next = item({ name: "New Page", linkTo: "/" });
       state.draft.items = [...state.draft.items, next];
@@ -1924,7 +1962,7 @@
       }
       render(); return;
     }
-    if (act === "toggle-type") { state.typeOpen = !state.typeOpen; state.sortOpen = false; render(); return; }
+    if (act === "toggle-type") { state.typeOpen = !state.typeOpen; render(); return; }
     if (act === "set-type") {
       switchResourceType(t.getAttribute("data-t"));
       return;
@@ -2021,7 +2059,9 @@
       render(); return;
     }
     if (act === "close-preview") { state.preview = false; render(); return; }
-    if (act === "save") { saveMenu(); return; }
+    if (act === "save") { requestSave(); return; }
+    if (act === "dismiss-save") { state.saveConfirm = false; render(); return; }
+    if (act === "confirm-save") { commitSave(); return; }
   }
 
   function onInput(e) {
