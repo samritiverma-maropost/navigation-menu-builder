@@ -291,7 +291,7 @@ body {
   min-height: 640px; background: #fff; border: 1px solid var(--ls-div); border-radius: 0;
 }
 .rp-tree { display: flex; flex-direction: column; border-right: 1px solid var(--ls-div); min-width: 0; }
-.rp-tree-bar { display: flex; align-items: center; gap: 12px; padding: 16px 20px; }
+.rp-tree-bar { display: flex; align-items: center; gap: 12px; padding: 16px 20px; position: relative; z-index: 8; }
 .rp-tree-bar h2 { margin: 0; font-size: 16px; font-weight: 500; }
 .rp-tree-bar-actions {
   margin-left: auto;
@@ -299,6 +299,63 @@ body {
   align-items: center;
   gap: 12px;
 }
+.rp-add-wrap { position: relative; }
+.rp-add-menu {
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 220px;
+  max-width: 280px;
+  z-index: 50;
+}
+.rp-add-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rp-add-menu .mdi { font-size: 18px; color: var(--ls-med); flex-shrink: 0; }
+.rp-add-menu button.preferred {
+  background: var(--ls-sel);
+  font-weight: 500;
+}
+.rp-add-menu button.preferred .mdi { color: var(--ls-ink); }
+.rp-add-menu button + button { border-top: 1px solid var(--ls-div); }
+.rp-add-menu button:disabled {
+  color: var(--ls-dis);
+  cursor: default;
+  background: transparent;
+}
+.rp-add-menu button:disabled:hover { background: transparent; }
+.rp-add-tip {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 240px;
+  background: var(--ls-ink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+  text-transform: none;
+  padding: 10px 12px;
+  border-radius: 4px;
+  box-shadow: 0 5px 5px -3px rgba(0,0,0,.2), 0 8px 10px 1px rgba(0,0,0,.14);
+  z-index: 45;
+}
+.rp-add-tip::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 28px;
+  border: 6px solid transparent;
+  border-top: 0;
+  border-bottom-color: var(--ls-ink);
+}
+@keyframes rp-row-flash {
+  0%, 35% { background: #fff4ce; }
+  100% { background: var(--ls-sel); }
+}
+.rp-row.flash { animation: rp-row-flash 1.2s ease forwards; }
 .rp-tree-bar .rp-expand { margin-left: 0; }
 .rp-chev-slot { width: 22px; height: 22px; display: inline-block; flex-shrink: 0; }
 .rp-bulk {
@@ -360,6 +417,7 @@ body {
 }
 .rp-empty h3 { margin: 0 0 8px; font-size: 20px; font-weight: 500; }
 .rp-empty p { margin: 0; max-width: 420px; color: var(--ls-med); font-size: 14px; letter-spacing: 0.25px; }
+.rp-empty p + p { margin-top: 8px; }
 
 .rp-level {
   display: inline-flex; align-items: center; justify-content: center;

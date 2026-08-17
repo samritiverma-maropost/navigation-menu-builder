@@ -254,6 +254,19 @@ function mapTree(nodes, fn) {
   return (nodes || []).map((n) => fn({ ...n, children: n.children ? mapTree(n.children, fn) : [] }));
 }
 
+function insertChild(nodes, parentId, child) {
+  return (nodes || []).map((n) => n.id === parentId
+    ? { ...n, children: [...(n.children || []), child] }
+    : { ...n, children: insertChild(n.children || [], parentId, child) });
+}
+
+function addTipSeen() {
+  try { return localStorage.getItem("nm-add-placement-tip") === "1"; } catch (e) { return true; }
+}
+function markAddTipSeen() {
+  try { localStorage.setItem("nm-add-placement-tip", "1"); } catch (e) {}
+}
+
 function ancestorsOf(nodes, id) {
   const flat = flatten(nodes);
   const byId = Object.fromEntries(flat.map((n) => [n.id, n]));
@@ -625,6 +638,10 @@ function EditorPage({ draft, setDraft, onCancel, onSave, wasLive }) {
   const [alert, setAlert] = useState(null);
   const [saveConfirm, setSaveConfirm] = useState(false);
   const [treeExpanded, setTreeExpanded] = useState({});
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const [flashRowId, setFlashRowId] = useState(null);
+  const addRef = useRef(null);
+  useOutside(addRef, () => setAddMenuOpen(false));
   const [baseline] = useState(() => JSON.stringify({ menuName: draft.menuName, active: draft.active, items: draft.items }));
   const typeRef = useRef(null);
   useOutside(typeRef, () => setTypeOpen(false));
@@ -669,9 +686,40 @@ function EditorPage({ draft, setDraft, onCancel, onSave, wasLive }) {
     });
   }
 
-  function addNew() {
+  function addNewItem(where) {
     const next = item({ name: "New Page", linkTo: "/" });
-    setDraft({ ...draft, items: [...draft.items, next], selectedId: next.id });
+    const sel = findNode(draft.items, draft.selectedId);
+    let items = draft.items;
+    if (where === "under" && sel) {
+      const d = flatten(draft.items).find((n) => n.id === sel.id);
+      if (d && d.depth >= 3) return;
+      items = insertChild(draft.items, sel.id, next);
+      const flat = flatten(items);
+      let cur = flat.find((n) => n.id === sel.id);
+      while (cur && cur.depth > 1 && cur.parentId) cur = flat.find((n) => n.id === cur.parentId);
+      if (cur && cur.depth === 1) setTreeExpanded((prev) => ({ ...prev, [cur.id]: true }));
+    } else {
+      items = [...draft.items, next];
+    }
+    setDraft({ ...draft, items, selectedId: next.id });
+    setAddMenuOpen(false);
+    setFlashRowId(next.id);
+    setTimeout(() => setFlashRowId((id) => (id === next.id ? null : id)), 1200);
+  }
+
+  function addNew() {
+    if (selected) {
+      setAddMenuOpen((open) => !open);
+      setRowMenu(null);
+      return;
+    }
+    const first = !addTipSeen();
+    markAddTipSeen();
+    addNewItem("top");
+    if (first) {
+      setToast("Added at the bottom as a top-level item");
+      setTimeout(() => setToast(""), 1600);
+    }
   }
 
   function bulk(action) {
@@ -845,7 +893,29 @@ function EditorPage({ draft, setDraft, onCancel, onSave, wasLive }) {
                   {draft.items.filter((n) => (n.children || []).length).every((n) => treeExpanded[n.id] !== false) ? "Collapse all" : "Expand all"}
                 </button>
               )}
-              <Btn primary onClick={addNew}>Add new</Btn>
+              <div className="rp-add-wrap" ref={addRef}>
+                <Btn primary onClick={addNew}>Add new</Btn>
+                {addMenuOpen && selected && (
+                  <div className="rp-menu rp-add-menu" role="menu">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="preferred"
+                      disabled={flatten(draft.items).find((n) => n.id === selected.id)?.depth >= 3}
+                      title={flatten(draft.items).find((n) => n.id === selected.id)?.depth >= 3 ? "Max nesting is L3" : undefined}
+                      onClick={() => addNewItem("under")}
+                    >
+                      <i className="mdi mdi-subdirectory-arrow-right" aria-hidden="true" />Add under {selected.name}
+                    </button>
+                    <button type="button" role="menuitem" onClick={() => addNewItem("top")}>
+                      <i className="mdi mdi-format-list-bulleted" aria-hidden="true" />Add to top level
+                    </button>
+                  </div>
+                )}
+                {!selected && draft.items.length === 0 && !addTipSeen() && (
+                  <div className="rp-add-tip">Adds a top-level item at the bottom of the menu.</div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -864,6 +934,7 @@ function EditorPage({ draft, setDraft, onCancel, onSave, wasLive }) {
             <div className="rp-empty">
               <h3>Build your storefront menu</h3>
               <p>Add collections in bulk, or add a single item. Nested children can be pulled from your catalog.</p>
+              <p>New items are added at the bottom as top-level items. Select a row, then Add new, to choose Add under instead.</p>
             </div>
           ) : (
             <div className="flex-1 overflow-auto">
@@ -885,7 +956,8 @@ function EditorPage({ draft, setDraft, onCancel, onSave, wasLive }) {
                 setTreeExpanded={setTreeExpanded}
                 rowMenu={rowMenu}
                 setRowMenu={setRowMenu}
-                onSelect={(id) => setDraft({ ...draft, selectedId: id })}
+                flashRowId={flashRowId}
+                onSelect={(id) => { setAddMenuOpen(false); setDraft({ ...draft, selectedId: id }); }}
                 onCheck={toggleCheck}
                 onIndent={(id) => {
                   const items = JSON.parse(JSON.stringify(draft.items));
@@ -1081,7 +1153,7 @@ function EditorPage({ draft, setDraft, onCancel, onSave, wasLive }) {
   );
 }
 
-function TreeRows({ nodes, depth, selectedId, checked, onSelect, onCheck, onHide, onRemove, onIndent, onOutdent, rowMenu, setRowMenu, treeExpanded, setTreeExpanded }) {
+function TreeRows({ nodes, depth, selectedId, checked, onSelect, onCheck, onHide, onRemove, onIndent, onOutdent, rowMenu, setRowMenu, treeExpanded, setTreeExpanded, flashRowId }) {
   return nodes.map((n) => {
     const loc = locate(nodes, n.id);
     const canIndent = loc && loc.index > 0 && depth < 3;
@@ -1093,7 +1165,7 @@ function TreeRows({ nodes, depth, selectedId, checked, onSelect, onCheck, onHide
     <React.Fragment key={n.id}>
       <div
         onClick={() => onSelect(n.id)}
-        className={`rp-row ${n.id === selectedId ? "selected" : ""} ${n.hidden ? "hidden-item" : ""}`}
+        className={`rp-row ${n.id === selectedId ? "selected" : ""} ${n.hidden ? "hidden-item" : ""} ${n.id === flashRowId ? "flash" : ""}`}
         style={{ paddingLeft: 20 + (depth - 1) * 20 }}
       >
         <input type="checkbox" checked={checked.includes(n.id)} onClick={(e) => e.stopPropagation()} onChange={() => onCheck(n.id)} />
@@ -1153,6 +1225,7 @@ function TreeRows({ nodes, depth, selectedId, checked, onSelect, onCheck, onHide
           setRowMenu={setRowMenu}
           treeExpanded={treeExpanded}
           setTreeExpanded={setTreeExpanded}
+          flashRowId={flashRowId}
         />
       )}
     </React.Fragment>

@@ -368,6 +368,17 @@
   function mapTree(nodes, fn) {
     return (nodes || []).map((n) => fn({ ...n, children: n.children ? mapTree(n.children, fn) : [] }));
   }
+  function insertChild(nodes, parentId, child) {
+    return (nodes || []).map((n) => n.id === parentId
+      ? Object.assign({}, n, { children: (n.children || []).concat([child]) })
+      : Object.assign({}, n, { children: insertChild(n.children || [], parentId, child) }));
+  }
+  function addTipSeen() {
+    try { return localStorage.getItem("nm-add-placement-tip") === "1"; } catch (e) { return true; }
+  }
+  function markAddTipSeen() {
+    try { localStorage.setItem("nm-add-placement-tip", "1"); } catch (e) {}
+  }
   function ancestorsOf(nodes, id) {
     const flat = flatten(nodes);
     const byId = {};
@@ -619,6 +630,8 @@
     state.baseline = menuFingerprint(state.draft);
     state.saveConfirm = false;
     state.treeExpanded = {};
+    state.addMenuOpen = false;
+    state.flashRowId = null;
   }
 
   function isDirty() {
@@ -645,6 +658,8 @@
     saveConfirm: false,
     openedLive: false,
     treeExpanded: {},
+    addMenuOpen: false,
+    flashRowId: null,
     typeOpen: false,
     rowMenu: null,
     picker: null,
@@ -664,6 +679,8 @@
     state.typeOpen = false;
     state.openedLive = false;
     state.rowMenu = null;
+    state.addMenuOpen = false;
+    state.flashRowId = null;
     state.picker = null;
     state.pickerByType = {};
     state.alert = null;
@@ -994,6 +1011,38 @@
     }, 1600);
   }
 
+  function expandL1For(id) {
+    const flat = flatten(state.draft.items);
+    let cur = flat.find((x) => x.n.id === id);
+    while (cur && cur.depth > 1 && cur.parent) {
+      cur = flat.find((x) => x.n.id === cur.parent.id);
+    }
+    if (cur && cur.depth === 1) {
+      state.treeExpanded = Object.assign({}, state.treeExpanded, { [cur.n.id]: true });
+    }
+  }
+
+  function addNewItem(where) {
+    const next = item({ name: "New Page", linkTo: "/" });
+    const sel = findNode(state.draft.items, state.draft.selectedId);
+    if (where === "under" && sel) {
+      if (depthOf(sel.id) >= 3) { flash("Max nesting is L3"); return; }
+      state.draft.items = insertChild(state.draft.items, sel.id, next);
+      expandL1For(sel.id);
+    } else {
+      state.draft.items = state.draft.items.concat([next]);
+    }
+    state.draft.selectedId = next.id;
+    state.addMenuOpen = false;
+    state.rowMenu = null;
+    state.picker = null;
+    state.flashRowId = next.id;
+    render();
+    setTimeout(function () {
+      if (state.flashRowId === next.id) { state.flashRowId = null; render(); }
+    }, 1200);
+  }
+
   function indentItem(id) {
     const loc = locate(state.draft.items, id);
     if (!loc || loc.index === 0) { flash("Nothing to indent under"); return; }
@@ -1263,7 +1312,7 @@
         ? `<button type="button" class="rp-chev" data-act="tree-exp" data-id="${n.id}" aria-label="${expanded ? "Collapse" : "Expand"} ${esc(n.name)}" aria-expanded="${expanded}"><i class="mdi ${expanded ? "mdi-chevron-down" : "mdi-chevron-right"}"></i></button>`
         : `<span class="rp-chev-slot"></span>`;
       return `
-        <div class="rp-row ${n.id === state.draft.selectedId ? "selected" : ""} ${n.hidden ? "hidden-item" : ""}"
+        <div class="rp-row ${n.id === state.draft.selectedId ? "selected" : ""} ${n.hidden ? "hidden-item" : ""} ${n.id === state.flashRowId ? "flash" : ""}"
           style="padding-left:${16 + (depth - 1) * 20}px" data-act="select-row" data-id="${n.id}">
           <input type="checkbox" ${checked ? "checked" : ""} data-act="check" data-id="${n.id}" />
               <span class="rp-drag" title="Drag to reorder" data-act="noop" aria-label="Drag">
@@ -1627,7 +1676,19 @@
             <h2>Menu structure</h2>
             <div class="rp-tree-bar-actions">
               ${l1Expandable().length ? `<button type="button" class="rp-expand" data-act="tree-toggle-all">${allL1Expanded() ? "Collapse all" : "Expand all"}</button>` : ""}
-              <button type="button" class="rp-btn primary" data-act="add-new">Add new</button>
+              <div class="rp-add-wrap">
+                <button type="button" class="rp-btn primary" data-act="add-new" aria-haspopup="menu" aria-expanded="${state.addMenuOpen ? "true" : "false"}">Add new</button>
+                ${state.addMenuOpen && sel ? `
+                  <div class="rp-menu rp-add-menu" role="menu" data-act="noop">
+                    <button type="button" class="preferred" role="menuitem" data-act="add-under" ${depthOf(sel.id) >= 3 ? "disabled" : ""} title="${depthOf(sel.id) >= 3 ? "Max nesting is L3" : ""}">
+                      <i class="mdi mdi-subdirectory-arrow-right" aria-hidden="true"></i>Add under ${esc(sel.name)}
+                    </button>
+                    <button type="button" role="menuitem" data-act="add-top">
+                      <i class="mdi mdi-format-list-bulleted" aria-hidden="true"></i>Add to top level
+                    </button>
+                  </div>` : ""}
+                ${!sel && d.items.length === 0 && !addTipSeen() ? `<div class="rp-add-tip">Adds a top-level item at the bottom of the menu.</div>` : ""}
+              </div>
             </div>
           </div>
           ${bulk}
@@ -1635,6 +1696,7 @@
             <div class="rp-empty">
               <h3>Build your storefront menu</h3>
               <p>Add collections in bulk, or add a single item. Nested children can be pulled from your catalog.</p>
+              <p>New items are added at the bottom as top-level items. Select a row, then Add new, to choose Add under instead.</p>
             </div>` : `
             <div class="rp-tree-list">
               <div class="rp-cols">
@@ -1674,6 +1736,8 @@
       }
     }
     bindTreeDnD();
+    const flashRow = app.querySelector(".rp-row.flash");
+    if (flashRow && flashRow.scrollIntoView) flashRow.scrollIntoView({ block: "nearest" });
   }
 
   function patchSelected(patch) {
@@ -1855,13 +1919,14 @@
     if (skipClick) return;
     const t = e.target.closest("[data-act]");
     if (!t) {
-      const close = state.rowMenu || state.listKebab || state.headerOpen || state.typeOpen || state.rowsOpen;
-      if (close && !e.target.closest(".rp-menu") && !e.target.closest(".rp-kebab") && !e.target.closest(".rp-select-btn")) {
+      const close = state.rowMenu || state.listKebab || state.headerOpen || state.typeOpen || state.rowsOpen || state.addMenuOpen;
+      if (close && !e.target.closest(".rp-menu") && !e.target.closest(".rp-kebab") && !e.target.closest(".rp-select-btn") && !e.target.closest(".rp-add-wrap")) {
         state.rowMenu = null;
         state.listKebab = null;
         state.headerOpen = null;
         state.typeOpen = false;
         state.rowsOpen = false;
+        state.addMenuOpen = false;
         render();
       }
       return;
@@ -1912,11 +1977,26 @@
     if (act === "rows") { state.rowsPerPage = Number(t.getAttribute("data-n")); state.rowsOpen = false; render(); return; }
     if (act === "toggle-active") { state.draft.active = !state.draft.active; render(); return; }
     if (act === "add-new") {
-      const next = item({ name: "New Page", linkTo: "/" });
-      state.draft.items = [...state.draft.items, next];
-      state.draft.selectedId = next.id;
-      state.picker = null;
-      render(); return;
+      const sel = findNode(state.draft.items, state.draft.selectedId);
+      if (sel) {
+        state.addMenuOpen = !state.addMenuOpen;
+        state.rowMenu = null;
+        render();
+        return;
+      }
+      const first = !addTipSeen();
+      markAddTipSeen();
+      addNewItem("top");
+      if (first) flash("Added at the bottom as a top-level item");
+      return;
+    }
+    if (act === "add-under") {
+      addNewItem("under");
+      return;
+    }
+    if (act === "add-top") {
+      addNewItem("top");
+      return;
     }
     if (act === "select-row") {
       if (state.picker) {
@@ -1930,6 +2010,7 @@
       if (state.draft.selectedId !== id) state.picker = null;
       state.draft.selectedId = id;
       state.rowMenu = null;
+      state.addMenuOpen = false;
       render(); return;
     }
     if (act === "check") {
